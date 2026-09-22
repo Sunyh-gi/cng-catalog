@@ -72,5 +72,26 @@ window.CNG_CATALOG = [
     "issue": null,
     "type": "supplement",
     "title": "2025年增刊 阿克苏"
+  },
+  {
+    "id": "2024-10",
+    "year": 2024,
+    "issue": 10,
+    "type": "special",
+    "title": "2024年第10期 山河四省专辑"
+  },
+  {
+    "id": "2024-02",
+    "year": 2024,
+    "issue": 2,
+    "type": "province",
+    "title": "2024年第2期 安徽专辑（下）"
+  },
+  {
+    "id": "2024-01",
+    "year": 2024,
+    "issue": 1,
+    "type": "province",
+    "title": "2024年第1期 安徽专辑（上）"
   }
 ];
