@@ -3,9 +3,10 @@
  *   --create  仓库不存在时创建（public，因为免费账号的 Pages 只对 public 仓开放）
  *   --pages   追加启用 GitHub Pages（main / root）
  *   --msg     覆盖默认提交说明
- * 推送清单: 静态清单 + 自动扫描 covers/full 与 covers/thumb 下的所有图片
+ * 推送清单: 下方 STATIC 白名单 + 自动扫描 covers/full 与 covers/thumb 下的所有图片
+ *   STATIC 是显式白名单，本地文件（如 DEV_NOTES.md）不在其中就不会被推上去。
  * 覆盖前自动 GET 取 sha；新建文件自动跳过 sha；每文件推送后回读 sha 校验。
- * 排除: 预览-*.png（本地决策记录）、_shot*.png、_tmp/、__pycache__/
+ * 排除: 预览-*.png（本地决策记录）、_shot*.png、_tmp/、__pycache__/、DEV_NOTES.md
  */
 const fs = require("fs");
 const path = require("path");
@@ -35,7 +36,7 @@ const STATIC = [
 ];
 const SCAN_DIRS = ["covers/full", "covers/thumb"];
 
-const DEFAULT_MSG = "chore: 开通 GitHub Pages 静态托管（中国国家地理刊物目录 v3.2）";
+const DEFAULT_MSG = "chore: 同步中国国家地理刊物目录";
 
 const API = "https://api.github.com";
 
