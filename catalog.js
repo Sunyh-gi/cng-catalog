@@ -35,7 +35,7 @@ window.CNG_CATALOG = [
     "id": "2025-10",
     "year": 2025,
     "issue": 10,
-    "type": "special",
+    "type": "province",
     "title": "2025年第10期 选美中国20周年 纪念版"
   },
   {
@@ -77,7 +77,7 @@ window.CNG_CATALOG = [
     "id": "2024-10",
     "year": 2024,
     "issue": 10,
-    "type": "special",
+    "type": "province",
     "title": "2024年第10期 山河四省专辑"
   },
   {
