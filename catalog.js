@@ -32,6 +32,27 @@ window.CNG_CATALOG = [
     "title": "2026年增刊 云阳"
   },
   {
+    "id": "2025-10",
+    "year": 2025,
+    "issue": 10,
+    "type": "special",
+    "title": "2025年第10期 选美中国20周年 纪念版"
+  },
+  {
+    "id": "2025-02",
+    "year": 2025,
+    "issue": 2,
+    "type": "province",
+    "title": "2025年第2期 广东专辑（下）"
+  },
+  {
+    "id": "2025-01",
+    "year": 2025,
+    "issue": 1,
+    "type": "province",
+    "title": "2025年第1期 广东专辑（上）"
+  },
+  {
     "id": "2025-TK-shenwuxia",
     "year": 2025,
     "issue": null,
@@ -44,5 +65,12 @@ window.CNG_CATALOG = [
     "issue": null,
     "type": "supplement",
     "title": "2025年增刊 长白秘境 吉线G331"
+  },
+  {
+    "id": "2025-TK-akesu",
+    "year": 2025,
+    "issue": null,
+    "type": "supplement",
+    "title": "2025年增刊 阿克苏"
   }
 ];
