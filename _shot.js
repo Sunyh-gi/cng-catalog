@@ -21,7 +21,7 @@ const year = (process.argv.find(a => a.startsWith('--year=')) || '').slice(7) ||
 const URL_ARG = (process.argv.find(a => a.startsWith('--url=')) || '').slice(6) || null;
 
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
-  '.jpg': 'image/jpeg', '.png': 'image/png', '.css': 'text/css; charset=utf-8' };
+  '.jpg': 'image/jpeg', '.png': 'image/png', '.ico': 'image/x-icon', '.css': 'text/css; charset=utf-8' };
 
 function mockCatalog() {
   const types = ['province', 'special', 'supplement', 'appendix'];
