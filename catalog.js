@@ -93,5 +93,19 @@ window.CNG_CATALOG = [
     "issue": 1,
     "type": "province",
     "title": "2024年第1期 安徽专辑（上）"
+  },
+  {
+    "id": "2023-02",
+    "year": 2023,
+    "issue": 2,
+    "type": "province",
+    "title": "2023年第2期 江西专辑（下）"
+  },
+  {
+    "id": "2023-01",
+    "year": 2023,
+    "issue": 1,
+    "type": "province",
+    "title": "2023年第1期 江西专辑（上）"
   }
 ];
