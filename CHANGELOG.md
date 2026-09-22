@@ -5,9 +5,28 @@
 版本号规则（两段式）：
 
 - **vX.0** —— 结构、样式或功能有变化
-- **vX.Y** —— 录入新刊目、文案微调、修 bug
+- **vX.Y** —— 录入新刊目、文案微调、修 bug、工具与部署调整
 
 每次改动都必须在这里追加一节，写完再推送。页面侧栏页脚显示的版本号对应本文件最新一节的版本。
+
+---
+
+## v3.3 —— 2026-09-22
+
+### 新增（部署）
+
+- **首次上线 GitHub Pages**：仓库 [Sunyh-gi/cng-catalog](https://github.com/Sunyh-gi/cng-catalog)（public），线上地址 <https://sunyh-gi.github.io/cng-catalog/>
+  - Pages 源配置为 `main` 分支根目录，站点是纯静态的，不需要构建
+  - 页面里的 `logo.jpg` / `catalog.js` / `covers/**` 全是相对路径，放在子目录下可直接工作
+- 新增 `_gh_push.js`：走 GitHub Contents API 推送（`--create` 建仓、`--pages` 开 Pages），**自动扫描 `covers/full` 与 `covers/thumb`**，以后录入新刊目不用回来改推送清单
+  - token 从环境变量 `GHPAT` 读，或放在同目录 `.gh_token`（已加进 `.gitignore`，绝不入库）
+  - 每个文件推送后回读 sha 校验，避免静默失败
+
+### 改进（工具）
+
+- `_shot.js` 新增 `--url=<url>`：直接复核线上站点，不启本地服务（与 `--mock` 互斥），产物后缀加 `_live`
+  - 上线后第一次线上复核就是靠它确认的：logo、三张封面、计数、页脚版本与日期全部正常
+- `.gitignore` 增补：`预览-*.png`（本地设计决策记录，体积大）、`.gh_token`（凭据）
 
 ---
 
