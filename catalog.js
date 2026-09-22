@@ -37,5 +37,12 @@ window.CNG_CATALOG = [
     "issue": null,
     "type": "special",
     "title": "2025年特刊 神武峡"
+  },
+  {
+    "id": "2025-TK-changbai",
+    "year": 2025,
+    "issue": null,
+    "type": "supplement",
+    "title": "2025年增刊 长白秘境 吉线G331"
   }
 ];
