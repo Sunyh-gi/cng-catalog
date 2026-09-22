@@ -2,8 +2,9 @@
  * 对齐诊断探针 —— 打印页头 / 筛选行 / 胶囊 / 网格的精确几何，用来定位几像素级的错位。
  *
  * 跑法：
- *   set NODE_PATH=C:\Users\Mickey\.workbuddy\binaries\node\workspace\node_modules
+ *   set NODE_PATH=<含 puppeteer-core 的 node_modules 目录>
  *   node _probe_align.js
+ * 本机具体的 NODE_PATH 见 DEV_NOTES.md。
  */
 
 'use strict';
