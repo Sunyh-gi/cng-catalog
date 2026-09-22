@@ -30,6 +30,7 @@ const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.js':   'application/javascript; charset=utf-8',
   '.css':  'text/css; charset=utf-8',
+  '.ico':  'image/x-icon',
   '.jpg':  'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.png':  'image/png',
@@ -208,6 +209,27 @@ async function collectErrors(page) {
   }
 
   check('A12 无 JS 报错', errors.length === 0, errors.join(' ;; '));
+
+  /* 站点图标（favicon）：必须是本地文件，不能退回内联占位 */
+  const iconHrefs = await page.$$eval('link[rel~="icon"]', ns => ns.map(n => n.getAttribute('href') || ''));
+  const localIcons = iconHrefs.filter(h => h && !/^data:/i.test(h) && !/^(https?:)?\/\//i.test(h));
+  const iconPng = localIcons.some(h => /favicon\.png$/i.test(h));
+  check('A13 站点图标指向本地文件（不是内联占位）', localIcons.length > 0 && iconPng,
+    iconHrefs.length ? iconHrefs.join(' | ') : '没有 link[rel=icon]');
+
+  const pngPath = path.join(ROOT, 'favicon.png');
+  const icoPath = path.join(ROOT, 'favicon.ico');
+  let pngDim = '', icoDim = '';
+  if (fs.existsSync(pngPath)) {
+    const b = fs.readFileSync(pngPath);
+    pngDim = b.readUInt32BE(16) + 'x' + b.readUInt32BE(20);       // PNG IHDR 宽 / 高
+  }
+  if (fs.existsSync(icoPath)) {
+    const b = fs.readFileSync(icoPath);
+    icoDim = (b[6] || 0) + 'x' + (b[7] || 0);                     // ICO 目录项宽 / 高
+  }
+  check('A14 favicon 文件是官方 32×32 图标', pngDim === '32x32' && icoDim === '32x32',
+    `png ${pngDim || '缺失'} / ico ${icoDim || '缺失'}`);
 
   /* ---------- C 对齐几何（与数据无关） ---------- */
   const geo = await page.evaluate(() => {
