@@ -8,7 +8,7 @@
  *   type   province 省份专辑 | special 特刊 | supplement 增刊 | appendix 附刊
  *   title  刊名
  */
-window.CNG_CATALOG_UPDATED = "2026-09-22";
+window.CNG_CATALOG_UPDATED = "2026-09-23";
 window.CNG_CATALOG = [
   {
     "id": "2026-02",
@@ -30,5 +30,12 @@ window.CNG_CATALOG = [
     "issue": null,
     "type": "supplement",
     "title": "2026年增刊 云阳"
+  },
+  {
+    "id": "2025-TK-shenwuxia",
+    "year": 2025,
+    "issue": null,
+    "type": "special",
+    "title": "2025年特刊 神武峡"
   }
 ];
