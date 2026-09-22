@@ -75,7 +75,7 @@ async function ensureRepo() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       name: name,
-      description: "中国国家地理刊物目录 · 历年省份专辑 / 增刊 / 特刊 / 附刊",
+      description: "中国国家地理特别刊物目录",
       private: false,
       has_issues: false,
       has_wiki: false,
