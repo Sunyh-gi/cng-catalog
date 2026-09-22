@@ -21,6 +21,8 @@ const STATIC = [
   "index.html",
   "catalog.js",
   "logo.jpg",
+  "favicon.png",
+  "favicon.ico",
   "README.md",
   "CHANGELOG.md",
   ".gitignore",
