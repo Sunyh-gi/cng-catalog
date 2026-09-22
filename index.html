@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>中国国家地理 · 特别刊物目录</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23C8102E'/%3E%3C/svg%3E">
+<style>
+/* ============================================================
+   设计令牌
+   双主色：白 + 中国国家地理红
+   ============================================================ */
+:root {
+  --red:         #C8102E;   /* 中国国家地理红 */
+  --red-soft:    #FCEBEE;   /* 红色浅底（选中态 / 类别标签底） */
+  --green:       #16A34A;   /* 已购标记。全站唯一的绿色，只用于卡片上那颗 6px 小圆点与弹层里的选项示意 */
+  --ink:         #1C1C1C;   /* 主文字 */
+  --title:       #333333;   /* 页面标题 */
+  --text-2:      #5E5E5E;   /* 次级文字 */
+  --text-3:      #8B8B8B;   /* 辅助文字 */
+  --text-4:      #A6A6A6;   /* 分组标签 / 占位符 */
+  --text-5:      #B4B4B4;   /* 页脚 */
+  --text-6:      #C6C6C6;   /* 页脚版本号 */
+  --line:        #ECECEC;   /* 分隔线 */
+  --line-2:      #E8E8E8;   /* 控件描边 */
+  --fill:        #F5F5F6;   /* 浅灰容器底 */
+  --fill-hover:  #F0F0F1;
+  --white:       #FFFFFF;
+  --sidebar-w:   240px;
+  --sb:          6px;       /* 滚动条宽度，同时也是网格相对页头缩进的量 */
+  --band-h:      88px;      /* 顶部栏高度。侧栏品牌区与主区页头共用这一个值，
+                               两列的顶部于是成为同一条水平带，页头文字全部落在侧栏顶部分隔线之上 */
+  --radius:      8px;
+  --radius-sm:   6px;
+  --font: "Noto Sans SC", "PingFang SC", "Microsoft YaHei",
+          "Hiragino Sans GB", system-ui, -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; }
+/* 必须清掉标题与段落的浏览器默认外边距，否则 .header__titles 会被撑到 97px（设计值 48px），
+   页头左右两块就彻底错位了 */
+h1, p { margin: 0; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--white);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button { font-family: inherit; cursor: pointer; }
+
+/* ============================================================
+   侧栏
+   ============================================================ */
+.sidebar {
+  flex: 0 0 var(--sidebar-w);
+  width: var(--sidebar-w);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  border-right: 1px solid var(--line);
+}
+
+/* 品牌区 —— logo 与副标题纵向居中对齐；高度与主区页头共用 --band-h */
+.brand {
+  height: var(--band-h);
+  flex: 0 0 var(--band-h);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+}
+.brand__logo { width: 120px; height: 60px; object-fit: contain; display: block; }
+/* 副标题：logo 图底部自带留白，几何居中会显得偏高，向下做 4px 光学校正 */
+.brand__sub {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--text-3);
+  transform: translateY(4px);
+  white-space: nowrap;
+}
+
+.sidebar__divider { flex: 0 0 1px; height: 1px; background: var(--line); }
+
+/* 导航区 */
+.nav {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 16px;
+}
+.nav__label {
+  height: 22px;
+  display: flex;
+  align-items: flex-end;
+  /* 文字贴盒底 + nav gap 2px，标签与下方内容原本只隔 2px，显得挤。
+     这里在盒内让出 3px（box-sizing: border-box，盒高不变），文字上移 3px，
+     标签与下方内容的间距由 2 变 5。用 padding 而不是 margin，
+     是为了不改变标签盒高，下方的「全部」项与年份项位置完全不动。 */
+  padding-bottom: 3px;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--text-4);
+  flex: 0 0 auto;
+}
+.nav__item {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 13px;
+  text-align: left;
+  transition: background .15s, color .15s;
+}
+.nav__item:hover { background: var(--fill); }
+.nav__item--lead { height: 38px; gap: 9px; }
+.nav__item.is-active {
+  background: var(--red-soft);
+  color: var(--red);
+  font-weight: 500;
+}
+.nav__item.is-active:hover { background: var(--red-soft); }
+.nav__text  { flex: 1 1 auto; line-height: 19px; }
+.nav__count { flex: 0 0 auto; font-size: 12px; line-height: 18px; color: var(--text-4); }
+.nav__item.is-active .nav__count { color: var(--red); font-weight: 500; }
+.nav__icon { flex: 0 0 auto; width: 16px; height: 16px; display: block; }
+.nav__icon rect { fill: var(--text-2); transition: fill .15s; }
+.nav__item.is-active .nav__icon rect { fill: var(--red); }
+
+/* 页脚：更新信息靠左，版本号靠右 */
+.footer {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 14px 16px;
+  font-size: 11px;
+  line-height: 16px;
+}
+.footer__updated { color: var(--text-5); }
+.footer__version { color: var(--text-6); }
+
+/* ============================================================
+   主内容区
+   ============================================================ */
+.main {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  /* 顶部不留内边距：页头从 y=0 起，占满 --band-h 这条带，与侧栏品牌区同高，
+     标题与搜索框在带内垂直居中，整个页头文字块因此落在侧栏顶部分隔线（y=88）之上 */
+  /* 右内边距 32-6 = 26：滚动条预留 6px 已占掉一部分视觉留白，
+     补回来之后网格可用宽 1136，卡片正好 368px，右侧视觉留白仍是 32px */
+  padding: 0 calc(32px - var(--sb)) 32px 32px;
+  background: var(--white);
+}
+
+/* 页头 —— 高度 = 侧栏品牌区高度，两列顶部构成同一条带 */
+.header {
+  flex: 0 0 auto;
+  height: var(--band-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  /* 与 .filters 一起右缩进一个滚动条宽，这样页头右缘、筛选行右缘、网格右缘三者对齐 */
+  padding-right: var(--sb);
+  /* 带内下沉 8px：box-sizing 是 border-box，上内边距 16px 把内容盒压到 72px，
+     align-items: center 让内容在内容盒里居中 → 中心由 44 移到 52，即视觉下移 8px。
+     盒子本身仍是 0–88，不动下方任何东西。 */
+  padding-top: 16px;
+  /* 13（本行）+ 24（.main 的 gap）= 37，使筛选行顶边正好落在 y=125，
+     与侧栏「全部」项齐平。页头上下调整都不牵动筛选行，靠的就是这段额外间距。 */
+  margin-bottom: 13px;
+}
+.header__titles { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.header__title {
+  font-size: 19px;
+  line-height: 26px;
+  font-weight: 500;      /* Medium，不是 Bold —— 22px Bold 近黑会太压 */
+  color: var(--title);
+}
+.header__sub   { font-size: 12px; line-height: 17px; color: var(--text-3); }
+
+.search {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 260px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  background: var(--fill);
+}
+.search__icon { flex: 0 0 auto; width: 15px; height: 15px; }
+.search__icon * { stroke: var(--text-4); }
+.search input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--ink);
+}
+.search input::placeholder { color: var(--text-4); }
+
+/* 筛选行 —— 行高 38 与侧栏「全部」项等高，两者顶边对齐后成为同一水平带 */
+.filters {
+  flex: 0 0 auto;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-right: var(--sb);
+}
+.pills { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; overflow-x: auto; }
+.pill {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--fill);
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 18px;
+  white-space: nowrap;
+  transition: background .15s, color .15s;
+}
+.pill:hover { background: var(--fill-hover); }
+.pill.is-active { background: var(--red); color: var(--white); }
+.pill.is-active:hover { background: var(--red); }
+
+/* 排序控件 */
+.sort { position: relative; flex: 0 0 auto; }
+.sort__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  color: var(--text-2);
+  font-size: 12px;
+  line-height: 17px;
+  white-space: nowrap;
+}
+.sort__btn:hover { border-color: #DCDCDC; }
+.sort__caret { width: 12px; height: 12px; }
+.sort__caret path { stroke: var(--text-2); transition: transform .15s; }
+.sort.is-open .sort__caret path { transform: rotate(180deg); }
+.sort__menu {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  min-width: 116px;
+  padding: 4px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .09);
+  z-index: 20;
+}
+.sort__menu[hidden] { display: none; }
+.sort__opt {
+  display: block;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  text-align: left;
+}
+.sort__opt:hover { background: var(--fill); }
+.sort__opt.is-active { color: var(--red); font-weight: 500; }
+
+/* ============================================================
+   刊物网格 + 滚动区
+   ============================================================ */
+.scroller {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+}
+.scroller::-webkit-scrollbar { width: var(--sb); }
+.scroller::-webkit-scrollbar-track { background: transparent; }
+.scroller::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: transparent;
+  transition: background .25s;
+}
+.scroller.is-scrolling::-webkit-scrollbar-thumb { background: #C8C8C8; }
+
+/* Firefox 不支持 ::-webkit-scrollbar，走标准属性。
+   注意：一旦在 Chromium 上声明 scrollbar-width，::-webkit-scrollbar 就会整体失效，
+   预留宽度会从 6px 变成 10px，网格随之变窄、右缘与页头对不齐。
+   所以这两条必须关在 @supports not 里，只在没有 ::-webkit-scrollbar 的浏览器生效。 */
+@supports not selector(::-webkit-scrollbar) {
+  .scroller { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+  .scroller.is-scrolling { scrollbar-color: #C8C8C8 transparent; }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+  align-content: start;
+  padding-bottom: 4px;
+}
+
+/* 刊物卡：封面左 + 信息右；无边框无阴影，靠留白分隔 */
+.card {
+  display: flex;
+  gap: 14px;
+  height: 132px;
+  padding: 12px;
+  border-radius: var(--radius);
+  background: var(--white);
+  transition: background .15s;
+  cursor: pointer;      /* 点封面以外的任意位置 = 标记拥有状态 */
+}
+.card:hover { background: #FAFAFA; }
+
+.card__cover {
+  flex: 0 0 81px;
+  width: 81px;
+  height: 108px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--fill);
+  display: block;
+  cursor: zoom-in;      /* 封面单独是「放大」，与卡片其余部分区分开 */
+  transition: box-shadow .18s, transform .18s;
+}
+.card__cover:hover { box-shadow: 0 4px 14px rgba(0, 0, 0, .16); transform: translateY(-1px); }
+/* contain：封面整张按原比例放进 3:4 的框里，短的那边留浅灰底（.card__cover 的 background）。
+   杂志封面并非都是 3:4（实测有 0.7215 的），用 cover 会把上下缘的红色出血边削掉，所以一律不裁 */
+.card__cover img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+.card__info {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;   /* 文字块顶对齐，与封面顶缘留 8px 光学间距 */
+}
+.card__tag {
+  align-self: flex-start;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  border-radius: 4px;
+  background: var(--red-soft);
+  color: var(--red);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 15px;
+  white-space: nowrap;
+}
+.card__title {
+  font-size: 14px;
+  line-height: 21px;
+  font-weight: 400;
+  color: #555555;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* 已购标记：刊名下方留白里的一颗小绿点。
+   不写文字，只做记号；align-self 防止被拉伸成椭圆。
+   margin-left 是相对信息区左缘的右移量（3px，纯视觉微调） */
+.card__owned {
+  align-self: flex-start;
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  margin-left: 3px;
+  border-radius: 50%;
+  background: var(--green);
+}
+
+/* ============================================================
+   拥有状态弹层（点卡片非图片区弹出）
+   全屏遮罩 + 屏幕正中的卡片。z-index 高于封面放大层，
+   是页面上最高优先级的浮层
+   ============================================================ */
+.owned-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(28, 28, 28, .42);
+}
+.owned-modal[hidden] { display: none; }
+.owned-modal__card {
+  width: 352px;
+  max-width: 100%;
+  padding: 22px 22px 18px;
+  border-radius: 12px;
+  background: var(--white);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, .24);
+}
+.owned-modal__label {
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: .5px;
+  color: var(--text-4);
+}
+.owned-modal__title {
+  margin-top: 6px;
+  font-size: 15px;
+  line-height: 23px;
+  font-weight: 500;
+  color: var(--title);
+}
+.owned-modal__opts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 18px;
+}
+.owned-modal__opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 18px;
+  text-align: left;
+}
+.owned-modal__opt:hover { border-color: #D2D2D2; background: var(--fill); }
+.owned-modal__opt.is-active {
+  border-color: var(--red);
+  background: var(--red-soft);
+  color: var(--red);
+  font-weight: 500;
+}
+/* 选项前的小圆点：已购是实心绿点，未购是空心圈。
+   这样选项本身就在解释卡片上那颗绿点的含义 */
+.owned-modal__dot {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+}
+.owned-modal__dot--hollow {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px #D2D2D2;
+}
+.owned-modal__hint {
+  margin-top: 16px;
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+  color: var(--text-4);
+}
+
+/* 空状态 */
+.empty {
+  grid-column: 1 / -1;
+  padding: 72px 0;
+  text-align: center;
+  color: var(--text-4);
+  font-size: 13px;
+}
+
+/* ============================================================
+   封面放大
+   ============================================================ */
+.viewer {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: rgba(0, 0, 0, .74);
+  z-index: 100;
+}
+.viewer[hidden] { display: none; }
+.viewer__box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  max-height: 100%;
+}
+.viewer__img {
+  max-height: calc(100vh - 130px);
+  max-width: min(560px, 100%);
+  border-radius: 6px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .45);
+  display: block;
+}
+.viewer__caption {
+  color: rgba(255, 255, 255, .92);
+  font-size: 13px;
+  letter-spacing: .2px;
+}
+.viewer__hint { color: rgba(255, 255, 255, .5); font-size: 11px; }
+
+/* 窄屏：收起侧栏宽度、网格自然降列 */
+@media (max-width: 900px) {
+  :root { --sidebar-w: 200px; }
+  .main { padding: 0 14px 20px 20px; gap: 16px; }
+  .header { margin-bottom: 8px; }
+  .search { width: 180px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== 侧栏 ==================== -->
+<aside class="sidebar">
+  <div class="brand">
+    <img class="brand__logo" src="logo.jpg" alt="中国国家地理"
+         onerror="this.style.display='none'">
+    <span class="brand__sub">特别刊物目录</span>
+  </div>
+
+  <div class="sidebar__divider"></div>
+
+  <nav class="nav" id="nav">
+    <div class="nav__label">刊物总览</div>
+    <button class="nav__item nav__item--lead is-active" data-year="all">
+      <svg class="nav__icon" viewBox="0 0 16 16" aria-hidden="true">
+        <rect x="2" y="2" width="5.07" height="5.07"></rect>
+        <rect x="8.93" y="2" width="5.07" height="5.07"></rect>
+        <rect x="2" y="8.93" width="5.07" height="5.07"></rect>
+        <rect x="8.93" y="8.93" width="5.07" height="5.07"></rect>
+      </svg>
+      <span class="nav__text">全部</span>
+      <span class="nav__count" id="navCountAll">0</span>
+    </button>
+    <div class="nav__label">按年份</div>
+    <div id="yearList" style="display:contents"></div>
+  </nav>
+
+  <div class="sidebar__divider"></div>
+
+  <div class="footer">
+    <span class="footer__updated" id="footUpdated">数据更新 —</span>
+    <span class="footer__version" id="footVersion">v1.0</span>
+  </div>
+</aside>
+
+<!-- ==================== 主区 ==================== -->
+<main class="main">
+  <header class="header">
+    <div class="header__titles">
+      <h1 class="header__title" id="pageTitle">目录</h1>
+      <p class="header__sub" id="pageSub">—</p>
+    </div>
+    <label class="search">
+      <svg class="search__icon" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+        <circle cx="6.4" cy="6.4" r="4.1" stroke-width="1.3"></circle>
+        <path d="M9.6 9.6 L13 13" stroke-width="1.3" stroke-linecap="round"></path>
+      </svg>
+      <input id="searchInput" type="search" placeholder="搜索专辑名称 / 期号" autocomplete="off">
+    </label>
+  </header>
+
+  <div class="filters">
+    <div class="pills" id="pills"></div>
+    <div class="sort" id="sort">
+      <button class="sort__btn" id="sortBtn" aria-haspopup="listbox" aria-expanded="false">
+        <span id="sortLabel">最近出版</span>
+        <svg class="sort__caret" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+          <path d="M3 4.7 L6 7.7 L9 4.7" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+      </button>
+      <div class="sort__menu" id="sortMenu" hidden role="listbox">
+        <button class="sort__opt is-active" data-sort="new" role="option">最近出版</button>
+        <button class="sort__opt" data-sort="old" role="option">最早出版</button>
+        <button class="sort__opt" data-sort="issue" role="option">按期号</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroller" id="scroller">
+    <div class="grid" id="grid"></div>
+  </div>
+</main>
+
+<!-- ============ 拥有状态弹层（全屏居中，最高优先级） ============ -->
+<div class="owned-modal" id="ownedModal" hidden role="dialog" aria-modal="true"
+     aria-labelledby="ownedModalTitle">
+  <div class="owned-modal__card">
+    <div class="owned-modal__label">标记状态</div>
+    <div class="owned-modal__title" id="ownedModalTitle"></div>
+    <div class="owned-modal__opts" role="radiogroup" aria-label="是否已购">
+      <button class="owned-modal__opt" data-owned="1" role="radio" aria-checked="false">
+        <span class="owned-modal__dot" aria-hidden="true"></span>
+        <span class="owned-modal__name">已购</span>
+      </button>
+      <button class="owned-modal__opt" data-owned="0" role="radio" aria-checked="false">
+        <span class="owned-modal__dot owned-modal__dot--hollow" aria-hidden="true"></span>
+        <span class="owned-modal__name">未购</span>
+      </button>
+    </div>
+    <div class="owned-modal__hint">点击空白处或按 Esc 取消</div>
+  </div>
+</div>
+
+<!-- ==================== 封面放大 ==================== -->
+<div class="viewer" id="viewer" hidden>
+  <div class="viewer__box">
+    <img class="viewer__img" id="viewerImg" alt="">
+    <div class="viewer__caption" id="viewerCaption"></div>
+    <div class="viewer__hint">点击任意处或按 Esc 关闭</div>
+  </div>
+</div>
+
+<script src="catalog.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var APP_VERSION = 'v3.2';
+
+  var TYPE_LABEL = {
+    province:   '省份专辑',
+    special:    '特刊',
+    supplement: '增刊',
+    appendix:   '附刊'
+  };
+  var TYPE_ORDER = ['province', 'special', 'supplement', 'appendix'];
+
+  var DATA = Array.isArray(window.CNG_CATALOG) ? window.CNG_CATALOG.slice() : [];
+  var UPDATED = window.CNG_CATALOG_UPDATED || '';
+
+  var state = { year: 'all', type: 'all', q: '', sort: 'new' };
+
+  var el = {
+    nav:          document.getElementById('nav'),
+    yearList:     document.getElementById('yearList'),
+    navCountAll:  document.getElementById('navCountAll'),
+    pageTitle:    document.getElementById('pageTitle'),
+    pageSub:      document.getElementById('pageSub'),
+    search:       document.getElementById('searchInput'),
+    pills:        document.getElementById('pills'),
+    sort:         document.getElementById('sort'),
+    sortBtn:      document.getElementById('sortBtn'),
+    sortMenu:     document.getElementById('sortMenu'),
+    sortLabel:    document.getElementById('sortLabel'),
+    scroller:     document.getElementById('scroller'),
+    grid:         document.getElementById('grid'),
+    ownedModal:   document.getElementById('ownedModal'),
+    ownedModalTitle: document.getElementById('ownedModalTitle'),
+    viewer:       document.getElementById('viewer'),
+    viewerImg:    document.getElementById('viewerImg'),
+    viewerCap:    document.getElementById('viewerCaption'),
+    footUpdated:  document.getElementById('footUpdated'),
+    footVersion:  document.getElementById('footVersion')
+  };
+
+  /* ---------- 拥有状态 ----------
+     真源优先级：本机标记 > catalog.js 里的 entry.owned。
+     本机标记存 localStorage，点一下即时生效、不联网、页面里不需要任何 token；
+     catalog.js 里的 owned 作为初始值（以后想把清单固化进仓库时，由助手写进去）。 */
+
+  var OWNED_KEY = 'cng-owned-v1';
+
+  function loadMarks() {
+    try { return JSON.parse(localStorage.getItem(OWNED_KEY)) || {}; }
+    catch (err) { return {}; }
+  }
+  var marks = loadMarks();
+
+  function saveMarks() {
+    try { localStorage.setItem(OWNED_KEY, JSON.stringify(marks)); } catch (err) {}
+  }
+
+  function isOwned(entry) {
+    if (!entry) return false;
+    if (Object.prototype.hasOwnProperty.call(marks, entry.id)) return !!marks[entry.id];
+    return !!entry.owned;
+  }
+
+  function entryById(id) {
+    return DATA.filter(function (e) { return e.id === id; })[0];
+  }
+
+  /* ---------- 工具 ---------- */
+
+  function typeLabel(t) { return TYPE_LABEL[t] || t; }
+
+  function matchSearch(e, q) {
+    if (!q) return true;
+    if ((e.title || '').toLowerCase().indexOf(q) >= 0) return true;
+    if (String(e.year).indexOf(q) === 0) return true;
+    if (e.issue != null && String(e.issue) === q) return true;
+    return false;
+  }
+
+  /* 无期号条目在同年末尾的相对次序（用户口径：附刊 → 增刊 → 特刊） */
+  var NO_ISSUE_RANK = { appendix: 1, supplement: 2, special: 3 };
+  /* 同一个期号撞车时（例如某一期正刊与它的附刊），正刊排在前 */
+  var SAME_ISSUE_RANK = { province: 1, special: 2, supplement: 3, appendix: 4 };
+
+  function sortEntries(list) {
+    /* 按期号：年份降序，同年内期号升序（第 1 期 → 第 2 期 → … → 第 10 期），
+       没有期号的（附刊 / 增刊 / 特刊）统一垫在同年末尾 */
+    if (state.sort === 'issue') {
+      return list.slice().sort(function (a, b) {
+        if (a.year !== b.year) return b.year - a.year;
+        var ai = a.issue == null ? Infinity : a.issue;
+        var bi = b.issue == null ? Infinity : b.issue;
+        if (ai !== bi) return ai - bi;
+        if (ai === Infinity) {
+          return (NO_ISSUE_RANK[a.type] || 9) - (NO_ISSUE_RANK[b.type] || 9);
+        }
+        return (SAME_ISSUE_RANK[a.type] || 9) - (SAME_ISSUE_RANK[b.type] || 9);
+      });
+    }
+    var dir = state.sort === 'new' ? -1 : 1;
+    return list.slice().sort(function (a, b) {
+      if (a.year !== b.year) return (a.year - b.year) * dir;
+      // 同年内：有期号的按期号排，无期号（增刊 / 特刊）固定排在末尾
+      var ai = a.issue == null ? Infinity : a.issue;
+      var bi = b.issue == null ? Infinity : b.issue;
+      if (ai === bi) return 0;
+      if (ai === Infinity) return 1;
+      if (bi === Infinity) return -1;
+      return (ai - bi) * dir;
+    });
+  }
+
+  function yearsDesc() {
+    var seen = {}, out = [];
+    DATA.forEach(function (e) {
+      if (!seen[e.year]) { seen[e.year] = 1; out.push(e.year); }
+    });
+    return out.sort(function (a, b) { return b - a; });
+  }
+
+  /* ---------- 分面计数 ---------- */
+  /* 年份导航的计数反映「当前类别 + 搜索」，类别胶囊的计数反映「当前年份 + 搜索」 */
+
+  function byTypeAndSearch() {
+    return DATA.filter(function (e) {
+      return (state.type === 'all' || e.type === state.type) && matchSearch(e, state.q);
+    });
+  }
+  function byYearAndSearch() {
+    return DATA.filter(function (e) {
+      return (state.year === 'all' || e.year === state.year) && matchSearch(e, state.q);
+    });
+  }
+
+  /* ---------- 渲染 ---------- */
+
+  function renderNav() {
+    var base = byTypeAndSearch();
+    var counts = {};
+    base.forEach(function (e) { counts[e.year] = (counts[e.year] || 0) + 1; });
+
+    el.navCountAll.textContent = base.length;
+
+    // 「全部」项的选中态
+    var lead = el.nav.querySelector('.nav__item--lead');
+    lead.classList.toggle('is-active', state.year === 'all');
+
+    var html = yearsDesc().map(function (y) {
+      return '<button class="nav__item' + (state.year === y ? ' is-active' : '') +
+             '" data-year="' + y + '">' +
+             '<span class="nav__text">' + y + '</span>' +
+             '<span class="nav__count">' + (counts[y] || 0) + '</span>' +
+             '</button>';
+    }).join('');
+    el.yearList.innerHTML = html;
+  }
+
+  function renderPills() {
+    var base = byYearAndSearch();
+    var counts = { all: base.length };
+    base.forEach(function (e) { counts[e.type] = (counts[e.type] || 0) + 1; });
+
+    var items = [{ key: 'all', label: '全部', n: counts.all }];
+    TYPE_ORDER.forEach(function (t) {
+      if (DATA.some(function (e) { return e.type === t; })) {
+        items.push({ key: t, label: typeLabel(t), n: counts[t] || 0 });
+      }
+    });
+
+    el.pills.innerHTML = items.map(function (it) {
+      return '<button class="pill' + (state.type === it.key ? ' is-active' : '') +
+             '" data-type="' + it.key + '">' + it.label + ' · ' + it.n + '</button>';
+    }).join('');
+  }
+
+  function renderHeader() {
+    var list = sortEntries(DATA.filter(function (e) {
+      return (state.year === 'all' || e.year === state.year) &&
+             (state.type === 'all' || e.type === state.type) &&
+             matchSearch(e, state.q);
+    }));
+
+    // 标题是固定文案，不承担筛选指示；筛选状态由侧栏高亮、副标题与各计数体现
+    var years = yearsDesc();
+    var sub = '共 ' + list.length + ' 期';
+    if (state.year !== 'all') {
+      sub = state.year + ' 年 · ' + sub;
+    } else if (years.length > 1) {
+      sub += ' · 覆盖 ' + years[years.length - 1] + ' – ' + years[0] + ' 年';
+    } else if (years.length === 1) {
+      sub += ' · ' + years[0] + ' 年';
+    }
+    el.pageSub.textContent = sub;
+
+    return list;
+  }
+
+  function renderGrid(list) {
+    if (!list.length) {
+      el.grid.innerHTML = '<div class="empty">' +
+        (DATA.length ? '没有符合条件的刊物' : '还没有录入刊目，用 _add_cover.py 加第一期刊物吧') +
+        '</div>';
+      return;
+    }
+    el.grid.innerHTML = list.map(function (e) {
+      var thumb = 'covers/thumb/' + e.id + '.jpg';
+      var full  = 'covers/full/'  + e.id + '.jpg';
+      // 已购：刊名下方留白里靠左点一颗小绿点；未购不加任何东西
+      var dot   = isOwned(e) ? '<span class="card__owned" title="已购"></span>' : '';
+      return '<article class="card" data-id="' + e.id + '">' +
+               '<button class="card__cover" data-open="' + e.id + '" title="点击放大封面">' +
+                 '<img src="' + thumb + '" alt="' + esc(e.title) + '" loading="lazy"' +
+                 ' data-full="' + full + '">' +
+               '</button>' +
+               '<div class="card__info">' +
+                 '<span class="card__tag">' + typeLabel(e.type) + '</span>' +
+                 '<span class="card__title">' + esc(e.title) + '</span>' +
+                 dot +
+               '</div>' +
+             '</article>';
+    }).join('');
+  }
+
+  /* 局部增删绿点，不重绘整张网格（避免闪烁与图片重载） */
+  function applyOwned(cardEl, owned) {
+    var title = cardEl.querySelector('.card__title');
+    var dot = cardEl.querySelector('.card__owned');
+    if (owned && !dot) {
+      dot = document.createElement('span');
+      dot.className = 'card__owned';
+      dot.title = '已购';
+      title.parentNode.insertBefore(dot, title.nextSibling);
+    } else if (!owned && dot) {
+      dot.parentNode.removeChild(dot);
+    }
+  }
+
+  function setOwned(id, owned) {
+    marks[id] = owned ? 1 : 0;
+    saveMarks();
+    var cardEl = el.grid.querySelector('.card[data-id="' + id + '"]');
+    if (cardEl) applyOwned(cardEl, owned);
+  }
+
+  /* ---------- 拥有状态弹层 ---------- */
+
+  function openOwnedMenu(cardEl) {
+    var entry = entryById(cardEl.dataset.id);
+    var current = isOwned(entry);
+    el.ownedModal.dataset.id = cardEl.dataset.id;
+    el.ownedModalTitle.textContent = entry ? entry.title : cardEl.dataset.id;
+    Array.prototype.forEach.call(el.ownedModal.querySelectorAll('.owned-modal__opt'), function (b) {
+      var on = (b.dataset.owned === '1') === current;
+      b.classList.toggle('is-active', on);
+      b.setAttribute('aria-checked', String(on));
+    });
+    el.ownedModal.hidden = false;
+  }
+
+  function closeOwnedMenu() {
+    if (!el.ownedModal.hidden) el.ownedModal.hidden = true;
+  }
+
+  el.ownedModal.addEventListener('click', function (ev) {
+    var btn = ev.target.closest('.owned-modal__opt');
+    if (btn) {
+      setOwned(el.ownedModal.dataset.id, btn.dataset.owned === '1');
+      closeOwnedMenu();
+      return;
+    }
+    // 点卡片以外的遮罩区域 = 取消
+    if (!ev.target.closest('.owned-modal__card')) closeOwnedMenu();
+  });
+
+  // 弹层打开时吃掉滚轮，免得背后的列表跟着一起滚
+  el.ownedModal.addEventListener('wheel', function (ev) { ev.preventDefault(); }, { passive: false });
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+    });
+  }
+
+  function render() {
+    renderNav();
+    renderPills();
+    var list = renderHeader();
+    renderGrid(list);
+  }
+
+  /* ---------- 交互 ---------- */
+
+  el.nav.addEventListener('click', function (ev) {
+    var btn = ev.target.closest('.nav__item');
+    if (!btn) return;
+    var y = btn.dataset.year;
+    var isYear = (y !== 'all');
+    state.year = isYear ? Number(y) : 'all';
+    /* 进年份页自动切成「按期号」，那一年就按 第1期 → 第2期 → … → 增刊/特刊 的自然顺序读；
+       回到「全部」总览则回到默认的「最近出版」（年份降序） */
+    setSort(isYear ? 'issue' : 'new');
+    render();
+    el.scroller.scrollTop = 0;
+  });
+
+  el.pills.addEventListener('click', function (ev) {
+    var btn = ev.target.closest('.pill');
+    if (!btn) return;
+    state.type = btn.dataset.type;
+    render();
+    el.scroller.scrollTop = 0;
+  });
+
+  var searchTimer = null;
+  el.search.addEventListener('input', function () {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(function () {
+      state.q = el.search.value.trim().toLowerCase();
+      render();
+    }, 140);
+  });
+
+  el.sortBtn.addEventListener('click', function (ev) {
+    ev.stopPropagation();
+    var open = el.sortMenu.hidden;
+    el.sortMenu.hidden = !open;
+    el.sort.classList.toggle('is-open', open);
+    el.sortBtn.setAttribute('aria-expanded', String(open));
+  });
+
+  el.sortMenu.addEventListener('click', function (ev) {
+    var opt = ev.target.closest('.sort__opt');
+    if (!opt) return;
+    setSort(opt.dataset.sort);
+    el.sortMenu.hidden = true;
+    el.sort.classList.remove('is-open');
+    el.sortBtn.setAttribute('aria-expanded', 'false');
+    render();
+  });
+
+  /* 切换排序方式：同时更新 state、按钮文案与菜单高亮 */
+  function setSort(mode) {
+    state.sort = mode;
+    var hit = null;
+    Array.prototype.forEach.call(el.sortMenu.children, function (b) {
+      var on = b.dataset.sort === mode;
+      b.classList.toggle('is-active', on);
+      if (on) hit = b;
+    });
+    if (hit) el.sortLabel.textContent = hit.textContent;
+  }
+
+  document.addEventListener('click', function (ev) {
+    if (!el.sortMenu.hidden) {
+      el.sortMenu.hidden = true;
+      el.sort.classList.remove('is-open');
+      el.sortBtn.setAttribute('aria-expanded', 'false');
+    }
+    /* 拥有状态弹层是全屏遮罩，任何点击都先落在遮罩上，
+       由它自己的 click 处理决定「选中」还是「取消」，这里不用再插手 */
+  });
+
+  /* 滚动时才浮现滚动条 */
+  var scrollTimer = null;
+  el.scroller.addEventListener('scroll', function () {
+    el.scroller.classList.add('is-scrolling');
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(function () {
+      el.scroller.classList.remove('is-scrolling');
+    }, 900);
+  }, { passive: true });
+
+  /* 点封面 = 放大原图；点封面以外的卡片区域 = 标记拥有状态 */
+  el.grid.addEventListener('click', function (ev) {
+    var btn = ev.target.closest('[data-open]');
+    if (btn) {
+      var img = btn.querySelector('img');
+      var entry = entryById(btn.dataset.open);
+      el.viewerImg.src = img.dataset.full;
+      el.viewerImg.alt = entry ? entry.title : '';
+      el.viewerImg.onerror = function () { el.viewerImg.src = img.src; };
+      el.viewerCap.textContent = entry ? entry.title : '';
+      el.viewer.hidden = false;
+      return;
+    }
+    var card = ev.target.closest('.card');
+    if (card) openOwnedMenu(card);
+  });
+
+  function closeViewer() {
+    el.viewer.hidden = true;
+    el.viewerImg.removeAttribute('src');
+  }
+  el.viewer.addEventListener('click', closeViewer);
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key !== 'Escape') return;
+    if (!el.viewer.hidden) closeViewer();
+    closeOwnedMenu();
+  });
+
+  /* ---------- 启动 ---------- */
+
+  el.footVersion.textContent = APP_VERSION;
+  el.footUpdated.textContent = '数据更新 ' + (UPDATED || '—');
+  render();
+})();
+</script>
+</body>
+</html>
