@@ -2,8 +2,9 @@
  * 中国国家地理 · 特别刊物目录 —— 冒烟测试
  *
  * 跑法（在项目目录下）：
- *   set NODE_PATH=C:\Users\Mickey\.workbuddy\binaries\node\workspace\node_modules
+ *   set NODE_PATH=<含 puppeteer-core 的 node_modules 目录>
  *   node _smoke.js
+ * 本机具体的 NODE_PATH 见 DEV_NOTES.md。
  *
  * 覆盖五轮：
  *   A 真实数据      —— 直接读当前 catalog.js，验证计数 / 卡片 / 封面加载 / 放大查看
