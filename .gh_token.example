@@ -1,0 +1,1 @@
+在这里粘贴一行 classic PAT（GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)，勾选 repo 权限），保存为 .gh_token（去掉 .example）
