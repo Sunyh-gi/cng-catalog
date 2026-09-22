@@ -101,6 +101,15 @@ def main():
     full_path = os.path.join(FULL_DIR, args.id + ext)
     shutil.copy2(args.src, full_path)
 
+    # 1.5) 更新封面时清掉 full 目录里同 id、异扩展名的旧文件（换格式不留残图；
+    #      同名同扩展名则已被上面 copy2 直接覆盖）。约定：更新封面一律删旧图。
+    for fn in os.listdir(FULL_DIR):
+        fstem, fext = os.path.splitext(fn)
+        if fstem == args.id and fext.lower() != ext:
+            stale = os.path.join(FULL_DIR, fn)
+            os.remove(stale)
+            print("已删除旧封面文件 %s" % os.path.relpath(stale, BASE_DIR))
+
     # 2) 生成缩略图
     thumb_path = os.path.join(THUMB_DIR, args.id + ".jpg")
     with Image.open(args.src) as im:
