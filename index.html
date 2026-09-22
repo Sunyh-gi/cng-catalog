@@ -773,10 +773,15 @@ button { font-family: inherit; cursor: pointer; }
     var dir = state.sort === 'new' ? -1 : 1;
     return list.slice().sort(function (a, b) {
       if (a.year !== b.year) return (a.year - b.year) * dir;
-      // 同年内：有期号的按期号排，无期号（增刊 / 特刊）固定排在末尾
+      // 同年内：有期号的按期号排，无期号（附刊 / 增刊 / 特刊）固定排在末尾
       var ai = a.issue == null ? Infinity : a.issue;
       var bi = b.issue == null ? Infinity : b.issue;
-      if (ai === bi) return 0;
+      if (ai === bi) {
+        /* 两张都没有期号时按「附刊 → 增刊 → 特刊」排，与「按期号」模式口径一致。
+           否则同年的两本无期号刊物会跟着数据文件里的先后顺序在两个视图里来回换位 */
+        if (ai === Infinity) return (NO_ISSUE_RANK[a.type] || 9) - (NO_ISSUE_RANK[b.type] || 9);
+        return 0;
+      }
       if (ai === Infinity) return 1;
       if (bi === Infinity) return -1;
       return (ai - bi) * dir;
