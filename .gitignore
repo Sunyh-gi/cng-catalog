@@ -7,6 +7,9 @@ _shot*.png
 # 本地推送凭据（classic PAT，绝不入库）
 .gh_token
 
+# 维护者本地手册（含本机路径与用户名，不进公开仓库）
+DEV_NOTES.md
+
 # 录入脚本的中间产物
 _tmp/
 *.pyc
