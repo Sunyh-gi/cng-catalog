@@ -5,7 +5,8 @@
           node _shot.js --owned             → 预置若干已购标记，看绿色小圆点
           node _shot.js --open              → 打开第一张卡片的「已购 / 未购」弹层
           node _shot.js --year=2025         → 先点进该年份页再截图
-   产物：_shot[_mock][_owned|_open][_yYYYY][_crop].png（复核完请删除） */
+          node _shot.js --url=<url>         → 直接复核线上站点（不起本地服务；与 --mock 互斥）
+   产物：_shot[_mock][_owned|_open][_yYYYY][_live][_crop].png（复核完请删除） */
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
@@ -17,6 +18,7 @@ const MOCK = process.argv.includes('--mock');
 const OWNED = process.argv.includes('--owned');
 const OPEN = process.argv.includes('--open');
 const year = (process.argv.find(a => a.startsWith('--year=')) || '').slice(7) || null;
+const URL_ARG = (process.argv.find(a => a.startsWith('--url=')) || '').slice(6) || null;
 
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
   '.jpg': 'image/jpeg', '.png': 'image/png', '.css': 'text/css; charset=utf-8' };
@@ -39,22 +41,29 @@ function mockCatalog() {
 }
 
 (async () => {
-  const server = http.createServer((req, res) => {
-    let f = decodeURIComponent(req.url.split('?')[0]);
-    if (f === '/' ) f = '/index.html';
-    if (f === '/catalog.js' && MOCK) {
-      res.writeHead(200, { 'Content-Type': MIME['.js'] });
-      return res.end(`window.CNG_CATALOG_UPDATED="2026-09-22";window.CNG_CATALOG=${JSON.stringify(mockCatalog())};`);
-    }
-    const p = path.join(ROOT, f.replace(/^\/+/, ''));
-    if (!p.startsWith(ROOT) || !fs.existsSync(p) || fs.statSync(p).isDirectory()) {
-      res.writeHead(404); return res.end('404');
-    }
-    res.writeHead(200, { 'Content-Type': MIME[path.extname(p).toLowerCase()] || 'application/octet-stream' });
-    fs.createReadStream(p).pipe(res);
-  });
-  await new Promise(r => server.listen(0, '127.0.0.1', r));
-  const base = `http://127.0.0.1:${server.address().port}/index.html`;
+  if (URL_ARG && MOCK) { console.error('--url 与 --mock 不能同时使用（mock 靠本地服务注入数据）'); process.exit(2); }
+  let server = null;
+  let base;
+  if (URL_ARG) {
+    base = URL_ARG;                       /* 线上复核：不起本地服务 */
+  } else {
+    server = http.createServer((req, res) => {
+      let f = decodeURIComponent(req.url.split('?')[0]);
+      if (f === '/' ) f = '/index.html';
+      if (f === '/catalog.js' && MOCK) {
+        res.writeHead(200, { 'Content-Type': MIME['.js'] });
+        return res.end(`window.CNG_CATALOG_UPDATED="2026-09-22";window.CNG_CATALOG=${JSON.stringify(mockCatalog())};`);
+      }
+      const p = path.join(ROOT, f.replace(/^\/+/, ''));
+      if (!p.startsWith(ROOT) || !fs.existsSync(p) || fs.statSync(p).isDirectory()) {
+        res.writeHead(404); return res.end('404');
+      }
+      res.writeHead(200, { 'Content-Type': MIME[path.extname(p).toLowerCase()] || 'application/octet-stream' });
+      fs.createReadStream(p).pipe(res);
+    });
+    await new Promise(r => server.listen(0, '127.0.0.1', r));
+    base = `http://127.0.0.1:${server.address().port}/index.html`;
+  }
 
   const browser = await puppeteer.launch({ executablePath: EDGE, headless: 'new',
     args: ['--no-sandbox', '--disable-dev-shm-usage', '--force-device-scale-factor=2'] });
@@ -97,10 +106,10 @@ function mockCatalog() {
   }
 
   const suffix = (MOCK ? '_mock' : '') + (OWNED ? '_owned' : '') + (OPEN ? '_open' : '') +
-                 (year ? '_y' + year : '') + (clip ? '_crop' : '');
+                 (year ? '_y' + year : '') + (URL_ARG ? '_live' : '') + (clip ? '_crop' : '');
   const out = path.join(ROOT, '_shot' + suffix + '.png');
   await page.screenshot(clip ? { path: out, clip } : { path: out });
   await browser.close();
-  server.close();
+  if (server) server.close();
   console.log('已生成 ' + out);
 })();
