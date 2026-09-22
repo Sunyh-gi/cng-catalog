@@ -231,6 +231,30 @@ async function collectErrors(page) {
   check('A14 favicon 文件是官方 32×32 图标', pngDim === '32x32' && icoDim === '32x32',
     `png ${pngDim || '缺失'} / ico ${icoDim || '缺失'}`);
 
+  /* A15：默认视图（最近出版）下，同年多张无期号条目要按 附刊 → 增刊 → 特刊 排，
+     与「按期号」模式口径一致（否则同年的两本增刊 / 特刊会在两个视图里来回换位）。
+     用真实数据，所以 mock 里那种「每年最多一张无期号」的情况不会让这项变空守。 */
+  const NOISSUE = { appendix: 1, supplement: 2, special: 3 };
+  const a15 = await page.evaluate(() => {
+    const cat = {};
+    (window.CNG_CATALOG || []).forEach(e => { cat[e.id] = e; });
+    return { cat: cat, order: Array.from(document.querySelectorAll('.card')).map(n => n.dataset.id) };
+  });
+  const tailByYear = {};
+  a15.order.forEach(id => {
+    const en = a15.cat[id];
+    if (en && en.issue == null) (tailByYear[en.year] = tailByYear[en.year] || []).push(en);
+  });
+  const multiYears = Object.keys(tailByYear).filter(y => tailByYear[y].length >= 2);
+  const a15ok = multiYears.length > 0 && multiYears.every(y => {
+    const r = tailByYear[y].map(en => NOISSUE[en.type] || 9);
+    return r.every((v, i) => i === 0 || v >= r[i - 1]);
+  });
+  check('A15 同年多张无期号条目按 附刊→增刊→特刊 排（与按期号一致）', a15ok,
+    multiYears.length
+      ? multiYears.map(y => y + ' ' + tailByYear[y].map(en => en.type).join('→')).join(' ; ')
+      : '数据里没有「同年两张以上无期号」的组合，这项无从检验');
+
   /* ---------- C 对齐几何（与数据无关） ---------- */
   const geo = await page.evaluate(() => {
     const box = s => { const n = document.querySelector(s); if (!n) return null;
