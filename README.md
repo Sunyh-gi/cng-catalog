@@ -4,6 +4,8 @@
 
 静态单文件应用，零依赖，不联网，不登录。所有数据存在仓库里，页面只读。
 
+**线上地址：<https://sunyh-gi.github.io/cng-catalog/>**　仓库：[Sunyh-gi/cng-catalog](https://github.com/Sunyh-gi/cng-catalog)
+
 ---
 
 ## 目录结构
@@ -18,10 +20,12 @@
 │   └── full/           封面原图 1080×1440，供点开放大
 ├── _add_cover.py       录入工具
 ├── _smoke.js           冒烟测试（55 项）
-├── _shot.js            视觉复核截图（可注入模拟数据、可选区域、可预置已购标记、可点进年份页）
+├── _shot.js            视觉复核截图（可注入模拟数据、可选区域、可预置已购标记、可点进年份页、可复核线上站点）
 ├── _probe_align.js     对齐几何探针（排版错位时先跑它）
+├── _gh_push.js         推送到 GitHub（Contents API，自动扫描 covers/）
+├── .gh_token           本地 PAT（不入库，从模板复制一行填上）
 ├── CHANGELOG.md        更新日志（每个版本改了什么）
-├── .gitignore          忽略 _shot*.png 等复核产物
+├── .gitignore          忽略 _shot*.png / 预览-*.png / .gh_token 等
 └── README.md           本文件
 ```
 
@@ -151,18 +155,42 @@ node _shot.js --clip=0,0,780,200   # 只截指定区域（x,y,w,h），用来放
 node _shot.js --owned              # 把当前数据全部标为已购，核对绿色小圆点 → _shot_owned.png
 node _shot.js --open               # 打开第一张卡片的「已购 / 未购」弹层 → _shot_open.png
 node _shot.js --year=2025          # 先点进该年份页再截图 → _shot_y2025.png
+node _shot.js --url=https://sunyh-gi.github.io/cng-catalog/   # 复核线上站点（不起本地服务）→ _shot_live.png
 ```
 
-真实刊目还很少时，用 `--mock` 才能看出 3 列网格和筛选行的真实排布。`--clip` 只截一块区域再看，是核实几像素级对齐最省事的办法。
+真实刊目还很少时，用 `--mock` 才能看出 3 列网格和筛选行的真实排布。`--clip` 只截一块区域再看，是核实几像素级对齐最省事的办法。`--url` 用来确认「推上去之后线上真的是对的」，跟本地跑的结果不是一回事。
 
 ## 发布
 
-托管在 GitHub Pages。改完代码或数据后的流程：
+托管在 GitHub Pages：
+
+- 仓库：<https://github.com/Sunyh-gi/cng-catalog>（public）
+- 线上：<https://sunyh-gi.github.io/cng-catalog/>
+- Pages 源：`main` 分支根目录，纯静态，不需要构建
+
+改完代码或数据后的流程：
 
 1. 跑 `node _smoke.js`，确认 55/55
 2. 在 `CHANGELOG.md` 追加本版本改了什么，并按规则抬版本号
 3. 同步改 `index.html` 里的 `APP_VERSION`（A7 检查三者必须一致）
-4. 推送
+4. 推送：
+
+```bash
+node _gh_push.js                     # 推送（新增刊目会被自动扫进清单）
+node _gh_push.js --create            # 仓库不存在时先建仓（public）
+node _gh_push.js --pages             # 顺带开启 GitHub Pages（main / root）
+node _gh_push.js --msg "提交说明"     # 自定义提交说明
+```
+
+5. 等一两分钟 Pages 构建完，`node _shot.js --url=https://sunyh-gi.github.io/cng-catalog/` 复核线上
+
+### 推送脚本怎么拿凭据
+
+`_gh_push.js` 优先读环境变量 `GHPAT`，没有就读同目录的 `.gh_token`。token 用 GitHub 的 **classic PAT**（Settings → Developer settings → Personal access tokens → Tokens (classic)，勾 `repo` 权限），一行一个，文件末尾不要留多余空行。
+
+`.gh_token` 已经加进 `.gitignore`，不会进版本库 —— 但也意味着**换机器要重新放一份**。
+
+推送走 Contents API 而不是 git CLI，是因为本机 Git Bash 的 PATH 不完整（`dirname` 等 coreutils 缺失），git 命令行不可用；顺带也避免了 JPEG 二进制被 git 的换行符处理搞坏。每个文件写完会回读 sha 做校验，所以**正常情况下必定有逐文件的 sha 输出**；如果一行没输出却 exit 0，那是空跑，要查。
 
 ## 设计令牌
 
