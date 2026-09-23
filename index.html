@@ -676,15 +676,18 @@ button { font-family: inherit; cursor: pointer; }
 (function () {
   'use strict';
 
-  var APP_VERSION = 'v3.10';
+  var APP_VERSION = 'v3.11';
 
+  /* 分类标签。新增一种 type 时，这里、TYPE_ORDER、NO_ISSUE_RANK 三处都要同步，
+     并抬版本号（这属于页面改动）。冒烟 A16 会校验「胶囊 = 数据里出现的 type」兜底。 */
   var TYPE_LABEL = {
     province:   '专辑',
     special:    '特刊',
     supplement: '增刊',
-    appendix:   '附刊'
+    appendix:   '附刊',
+    book:       '图书'
   };
-  var TYPE_ORDER = ['province', 'special', 'supplement', 'appendix'];
+  var TYPE_ORDER = ['province', 'special', 'supplement', 'appendix', 'book'];
 
   var DATA = Array.isArray(window.CNG_CATALOG) ? window.CNG_CATALOG.slice() : [];
   var UPDATED = window.CNG_CATALOG_UPDATED || '';
@@ -753,8 +756,8 @@ button { font-family: inherit; cursor: pointer; }
     return false;
   }
 
-  /* 无期号条目在同年末尾的相对次序（用户口径：附刊 → 增刊 → 特刊） */
-  var NO_ISSUE_RANK = { appendix: 1, supplement: 2, special: 3 };
+  /* 无期号条目在同年末尾的相对次序（用户口径：附刊 → 增刊 → 特刊 → 图书） */
+  var NO_ISSUE_RANK = { appendix: 1, supplement: 2, special: 3, book: 4 };
   /* 同一个期号撞车时（例如某一期正刊与它的附刊），正刊排在前 */
   var SAME_ISSUE_RANK = { province: 1, special: 2, supplement: 3, appendix: 4 };
 
