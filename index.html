@@ -143,6 +143,9 @@ button { font-family: inherit; cursor: pointer; }
 .nav__item.is-active:hover { background: var(--red-soft); }
 .nav__text  { flex: 1 1 auto; line-height: 19px; }
 .nav__count { flex: 0 0 auto; font-size: 12px; line-height: 18px; color: var(--text-4); }
+/* 集齐标记：某年全部刊物都已购时，年份行计数数字前的一颗小绿点。
+   判断基于数据全集，不随搜索 / 类别筛选变化 */
+.nav__dot { flex: 0 0 auto; width: 6px; height: 6px; margin-right: 5px; border-radius: 50%; background: var(--green); }
 .nav__item.is-active .nav__count { color: var(--red); font-weight: 500; }
 .nav__icon { flex: 0 0 auto; width: 16px; height: 16px; display: block; }
 .nav__icon rect { fill: var(--text-2); transition: fill .15s; }
@@ -673,7 +676,7 @@ button { font-family: inherit; cursor: pointer; }
 (function () {
   'use strict';
 
-  var APP_VERSION = 'v3.9';
+  var APP_VERSION = 'v3.10';
 
   var TYPE_LABEL = {
     province:   '专辑',
@@ -824,9 +827,13 @@ button { font-family: inherit; cursor: pointer; }
     lead.classList.toggle('is-active', state.year === 'all');
 
     var html = yearsDesc().map(function (y) {
+      /* 集齐标记：该年全部刊物都已购（基于 DATA 全集，不随筛选变化） */
+      var items = DATA.filter(function (e) { return e.year === y; });
+      var complete = items.length > 0 && items.every(function (e) { return isOwned(e); });
       return '<button class="nav__item' + (state.year === y ? ' is-active' : '') +
              '" data-year="' + y + '">' +
              '<span class="nav__text">' + y + '</span>' +
+             (complete ? '<span class="nav__dot" title="该年刊物已集齐"></span>' : '') +
              '<span class="nav__count">' + (counts[y] || 0) + '</span>' +
              '</button>';
     }).join('');
@@ -918,6 +925,8 @@ button { font-family: inherit; cursor: pointer; }
     saveMarks();
     var cardEl = el.grid.querySelector('.card[data-id="' + id + '"]');
     if (cardEl) applyOwned(cardEl, owned);
+    /* 侧栏年份「集齐绿点」可能因这一标记得失而变化 */
+    renderNav();
   }
 
   /* ---------- 拥有状态弹层 ---------- */
