@@ -25,7 +25,9 @@ const path = require('path');
 const puppeteer = require('puppeteer-core');
 
 const ROOT = __dirname;
-const EDGE = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
+/* Edge 可执行文件：默认系统安装路径，可用环境变量 EDGE_PATH 覆盖
+   （Edge 换版本目录 / 换成 Chromium 内核浏览器时不必改代码） */
+const EDGE = process.env.EDGE_PATH || 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -511,6 +513,23 @@ async function collectErrors(page) {
   check('D11 点遮罩空白处收起弹层', backdropClosed, backdropClosed ? '' : '没收起');
 
   check('D12 无 JS 报错', errors.length === 0, errors.join(' ;; '));
+
+  /* D13 侧栏年份「集齐绿点」：某年全部刊物已购 → 该年份行计数前出现小绿点；
+     取消任意一本 → 消失。用 2011 年测（只有喀斯特一本，最容易凑齐/打破）。 */
+  await page.evaluate(() => { document.querySelector('.card[data-id="2011-10"]').click(); });
+  await sleep(200);
+  await page.evaluate(() => { document.querySelector('.owned-modal__opt[data-owned="1"]').click(); });
+  await sleep(250);
+  const dotOn = await page.evaluate(() =>
+    !!document.querySelector('#yearList .nav__item[data-year="2011"] .nav__dot'));
+  await page.evaluate(() => { document.querySelector('.card[data-id="2011-10"]').click(); });
+  await sleep(200);
+  await page.evaluate(() => { document.querySelector('.owned-modal__opt[data-owned="0"]').click(); });
+  await sleep(250);
+  const dotOff = await page.evaluate(() =>
+    !document.querySelector('#yearList .nav__item[data-year="2011"] .nav__dot'));
+  check('D13 年份集齐绿点（该年全部已购出现 / 取消一本消失）',
+    dotOn && dotOff, `出现 ${dotOn} / 消失 ${dotOff}`);
 
   /* ---------- F 封面缩略图不被裁切 ----------
      杂志封面并非都是 3:4，用 object-fit:cover 会切掉边缘。
