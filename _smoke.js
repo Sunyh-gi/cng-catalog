@@ -49,7 +49,7 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 /* ---------------- 模拟数据 ---------------- */
 function mockCatalog() {
-  const types = ['province', 'special', 'supplement', 'appendix'];
+  const types = ['province', 'special', 'supplement', 'appendix', 'book'];
   const out = [];
   for (let y = 2026; y >= 2012; y--) {
     const cnt = 1 + (y % 3);
@@ -58,7 +58,7 @@ function mockCatalog() {
         id: `mock-${y}-${i}`,
         year: y,
         issue: i,
-        type: types[(y + i) % 4],
+        type: types[(y + i) % 5],
         title: `${y}年第${i}期 测试专辑（上）`,
       });
     }
@@ -237,7 +237,7 @@ async function collectErrors(page) {
   /* A15：默认视图（最近出版）下，同年多张无期号条目要按 附刊 → 增刊 → 特刊 排，
      与「按期号」模式口径一致（否则同年的两本增刊 / 特刊会在两个视图里来回换位）。
      用真实数据，所以 mock 里那种「每年最多一张无期号」的情况不会让这项变空守。 */
-  const NOISSUE = { appendix: 1, supplement: 2, special: 3 };
+  const NOISSUE = { appendix: 1, supplement: 2, special: 3, book: 4 };
   const a15 = await page.evaluate(() => {
     const cat = {};
     (window.CNG_CATALOG || []).forEach(e => { cat[e.id] = e; });
@@ -253,10 +253,35 @@ async function collectErrors(page) {
     const r = tailByYear[y].map(en => NOISSUE[en.type] || 9);
     return r.every((v, i) => i === 0 || v >= r[i - 1]);
   });
-  check('A15 同年多张无期号条目按 附刊→增刊→特刊 排（与按期号一致）', a15ok,
+  check('A15 同年多张无期号条目按 附刊→增刊→特刊→图书 排（与按期号一致）', a15ok,
     multiYears.length
       ? multiYears.map(y => y + ' ' + tailByYear[y].map(en => en.type).join('→')).join(' ; ')
       : '数据里没有「同年两张以上无期号」的组合，这项无从检验');
+
+  /* A16：类别胶囊必须与数据里真实出现的 type 一一对应。
+     新增一种分类（如 book 图书）时，若忘了同步 index.html 的 TYPE_ORDER / TYPE_LABEL，
+     这项会立刻失败：胶囊缺失 → 集合对不上；标签没登记 → 退化显示成英文 key。
+     同时校验每个胶囊上的计数等于该分类的真实条数。 */
+  const a16 = await page.evaluate(() => {
+    const data = window.CNG_CATALOG || [];
+    const inData = {};
+    data.forEach(e => { inData[e.type] = (inData[e.type] || 0) + 1; });
+    const pills = Array.from(document.querySelectorAll('.pill')).map(n => ({
+      key: n.dataset.type,
+      label: (n.textContent || '').trim(),
+    }));
+    return { inData: inData, pills: pills };
+  });
+  const pillNoAll = a16.pills.filter(p => p.key !== 'all');
+  const labelsOk = pillNoAll.every(p => {
+    const m = p.label.match(/^(.*) · (\d+)$/);
+    return m && m[1] !== p.key && Number(m[2]) === a16.inData[p.key];
+  });
+  check('A16 类别胶囊 = 数据里出现的 type（含新分类）',
+    pillNoAll.length > 0 &&
+    pillNoAll.map(p => p.key).sort().join(',') === Object.keys(a16.inData).sort().join(',') &&
+    labelsOk,
+    `胶囊 ${pillNoAll.map(p => p.label).join(' | ')} / 数据 ${JSON.stringify(a16.inData)}`);
 
   /* ---------- C 对齐几何（与数据无关） ---------- */
   const geo = await page.evaluate(() => {
@@ -515,20 +540,37 @@ async function collectErrors(page) {
   check('D12 无 JS 报错', errors.length === 0, errors.join(' ;; '));
 
   /* D13 侧栏年份「集齐绿点」：某年全部刊物已购 → 该年份行计数前出现小绿点；
-     取消任意一本 → 消失。用 2011 年测（只有喀斯特一本，最容易凑齐/打破）。 */
-  await page.evaluate(() => { document.querySelector('.card[data-id="2011-10"]').click(); });
-  await sleep(200);
-  await page.evaluate(() => { document.querySelector('.owned-modal__opt[data-owned="1"]').click(); });
-  await sleep(250);
-  const dotOn = await page.evaluate(() =>
-    !!document.querySelector('#yearList .nav__item[data-year="2011"] .nav__dot'));
-  await page.evaluate(() => { document.querySelector('.card[data-id="2011-10"]').click(); });
-  await sleep(200);
-  await page.evaluate(() => { document.querySelector('.owned-modal__opt[data-owned="0"]').click(); });
-  await sleep(250);
-  const dotOff = await page.evaluate(() =>
-    !document.querySelector('#yearList .nav__item[data-year="2011"] .nav__dot'));
-  check('D13 年份集齐绿点（该年全部已购出现 / 取消一本消失）',
+     取消任意一本 → 消失。
+     ⚠ 不要写死年份：库里的刊物会持续增加，写死会让断言随数据变化而失效。
+     （2026-09-24 给 2011 年补了增刊后，「只标 2011-10 就算集齐」的旧假设就破了。）
+     这里动态挑「条目最少的年份」，把该年全部卡片都标为已购，再打破其中一本。 */
+  const d13 = await page.evaluate(() => {
+    const byYear = {};
+    document.querySelectorAll('.card').forEach((c) => {
+      const y = (c.dataset.id || '').slice(0, 4); // id 形如 2011-10 / 2011-TK-xxx
+      (byYear[y] = byYear[y] || []).push(c.dataset.id);
+    });
+    const years = Object.keys(byYear).sort((a, b) =>
+      byYear[a].length - byYear[b].length || (a < b ? -1 : 1));
+    return { year: years[0], ids: byYear[years[0]] };
+  });
+  const setOwned = async (id, val) => {
+    await page.evaluate((i) => {
+      document.querySelector(`.card[data-id="${i}"]`).click();
+    }, id);
+    await sleep(200);
+    await page.evaluate((v) => {
+      document.querySelector(`.owned-modal__opt[data-owned="${v}"]`).click();
+    }, val);
+    await sleep(250);
+  };
+  for (const id of d13.ids) await setOwned(id, '1');
+  const dotOn = await page.evaluate((y) =>
+    !!document.querySelector(`#yearList .nav__item[data-year="${y}"] .nav__dot`), d13.year);
+  await setOwned(d13.ids[d13.ids.length - 1], '0');
+  const dotOff = await page.evaluate((y) =>
+    !document.querySelector(`#yearList .nav__item[data-year="${y}"] .nav__dot`), d13.year);
+  check(`D13 年份集齐绿点（该年全部已购出现 / 取消一本消失）[${d13.year} · ${d13.ids.length} 本]`,
     dotOn && dotOff, `出现 ${dotOn} / 消失 ${dotOff}`);
 
   /* ---------- F 封面缩略图不被裁切 ----------
@@ -704,6 +746,27 @@ async function collectErrors(page) {
   check('E4 全部视图选「按期号」= 年份降序 + 同年期号升序',
     manualLabel === '按期号' && yearsDesc && y2026Asc,
     `标签「${manualLabel}」/ 年份降序 ${yearsDesc} / 2026 期号 ${y2026.join(',')} 升序 ${y2026Asc}`);
+
+  /* A17 无期号条目一律垫在「同年有期号条目」之后。
+     2026-09-24 首次录入「无期号的专辑」（2014年专辑 福建 / 2014-ZJ-fujian）——
+     它的 type=province 并不在 NO_ISSUE_RANK 里，靠页面里 `|| 9` 的兜底排在年末。
+     这条断言把这个兜底行为固定下来：以后再加「无期号 + 新类型」也不会窜到有期号条目前面。
+     判别方式：id 形如 YYYY-NN = 有期号；YYYY-XX-xxx = 无期号。 */
+  const a17bad = await page.evaluate(() => {
+    const byYear = {};
+    document.querySelectorAll('.card').forEach((c) => {
+      const id = c.dataset.id || '';
+      (byYear[id.slice(0, 4)] = byYear[id.slice(0, 4)] || []).push(/^\d{4}-\d+$/.test(id));
+    });
+    return Object.keys(byYear).filter((y) => {
+      const flags = byYear[y];
+      const firstNoIssue = flags.indexOf(false);
+      return firstNoIssue !== -1 && flags.slice(firstNoIssue).some(Boolean);
+    });
+  });
+  check('A17 无期号条目一律排在同年有期号条目之后（含 NO_ISSUE_RANK 未覆盖的类型）',
+    a17bad.length === 0,
+    a17bad.length ? '次序倒置的年份：' + a17bad.join(', ') : '全部年份次序正确');
 
   check('E5 无 JS 报错', errors.length === 0, errors.join(' ;; '));
 
