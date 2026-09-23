@@ -1,6 +1,6 @@
 /* 视觉复核截图：临时起 http 服务 + 可注入模拟数据
    用法： node _shot.js                     → 真实数据，整屏
-          node _shot.js --mock              → 38 条模拟数据（看 3 列网格 & 4 个类别胶囊）
+          node _shot.js --mock              → 38 条模拟数据（看 3 列网格 & 5 个类别胶囊）
           node _shot.js --clip=0,80,700,180 → 只截指定区域（CSS 像素，x,y,w,h），用来放大核对几像素级对齐
           node _shot.js --owned             → 预置若干已购标记，看绿色小圆点
           node _shot.js --open              → 打开第一张卡片的「已购 / 未购」弹层
@@ -25,17 +25,17 @@ const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; cha
   '.jpg': 'image/jpeg', '.png': 'image/png', '.ico': 'image/x-icon', '.css': 'text/css; charset=utf-8' };
 
 function mockCatalog() {
-  const types = ['province', 'special', 'supplement', 'appendix'];
-  const names = { province: '专辑', special: '年度特刊', supplement: '增刊', appendix: '附刊' };
+  const types = ['province', 'special', 'supplement', 'appendix', 'book'];
+  const names = { province: '专辑', special: '年度特刊', supplement: '增刊', appendix: '附刊', book: '图书' };
   const out = []; let n = 0;
   for (let y = 2026; y >= 2012; y--) {
     const cnt = y === 2026 ? 3 : (y % 3) + 2;
     for (let i = 1; i <= cnt; i++) {
-      const t = types[(n++) % 4];
+      const t = types[(n++) % 5];
       out.push({ id: `${y}-${String(i).padStart(2, '0')}`, year: y, issue: i, type: t,
-        title: t === 'supplement' || t === 'special'
-          ? `${y}年${t === 'special' ? '' : '增刊'} ${names[t]} 示例标题第${i}辑`
-          : `${y}年第${i}期 ${names[t]} 示例标题（上）` });
+        title: t === 'province' || t === 'appendix'
+          ? `${y}年第${i}期 ${names[t]} 示例标题（上）`
+          : `${y}年${names[t]} 示例标题第${i}辑` });
     }
   }
   return out;
