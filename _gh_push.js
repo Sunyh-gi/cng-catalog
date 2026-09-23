@@ -33,6 +33,7 @@ const STATIC = [
   ".gitignore",
   ".gh_token.example",
   "_add_cover.py",
+  "_check_cover.py",
   "_smoke.js",
   "_shot.js",
   "_gh_push.js",
