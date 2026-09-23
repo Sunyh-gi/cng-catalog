@@ -13,7 +13,8 @@ const http = require('http');
 const puppeteer = require('puppeteer-core');
 
 const ROOT = __dirname;
-const EDGE = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
+/* Edge 可执行文件：默认系统安装路径，可用环境变量 EDGE_PATH 覆盖 */
+const EDGE = process.env.EDGE_PATH || 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
 const MOCK = process.argv.includes('--mock');
 const OWNED = process.argv.includes('--owned');
 const OPEN = process.argv.includes('--open');
