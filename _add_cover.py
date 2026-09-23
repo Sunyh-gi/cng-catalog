@@ -6,11 +6,14 @@
   python _add_cover.py --src "C:\\path\\202602.jpg" --id 2026-02 --year 2026 \
       --issue 2 --type province --title "2026年第2期 黑龙江专辑（下）"
 
-  --id      刊目唯一标识，同时作为封面文件名（建议 YYYY-NN / YYYY-TK-xxx / YYYY-FK-xxx）
+  --id      刊目唯一标识，同时作为封面文件名（建议 YYYY-NN / YYYY-TK-xxx / YYYY-BK-xxx）
   --year    年份（整数）
-  --issue   期号（整数，可省略；增刊/特刊无期号时不填）
-  --type    province | special | supplement | appendix
+  --issue   期号（整数，可省略；增刊/特刊/图书无期号时不填）
+  --type    province | special | supplement | appendix | book
   --title   刊名（严格按用户命名规范）
+            · 连续性出版物：YYYY年第N期 <刊名> / YYYY年特刊|增刊|附刊 <地名>
+            · 图书 book  ：「年份 书名」，如 2022 发现黄河：沿黄非物质文化遗产
+                            （图书不带「年」字、也不带「图书」二字，类别由 type 体现）
   --no-append   只生成图片，不写入 catalog.js
 
 脚本做的事：
@@ -42,7 +45,7 @@ THUMB_SIZE = (480, 640)          # 4:3 竖版，对应杂志封面比例
 THUMB_QUALITY = 82
 FULL_QUALITY = 92                # 非 JPEG 源转 JPEG 时的质量（页面只认 .jpg，见下）
 
-TYPES = ("province", "special", "supplement", "appendix")
+TYPES = ("province", "special", "supplement", "appendix", "book")
 
 CATALOG_HEADER = """/* 中国国家地理 · 特别刊物目录
  * 数据真源，由 _add_cover.py 生成与维护。
@@ -50,8 +53,8 @@ CATALOG_HEADER = """/* 中国国家地理 · 特别刊物目录
  * 字段：
  *   id     刊目唯一标识，同时是封面文件名（不含扩展名）
  *   year   年份
- *   issue  期号（增刊/特刊无期号时为 null）
- *   type   province 省份专辑 | special 特刊 | supplement 增刊 | appendix 附刊
+ *   issue  期号（增刊/特刊/图书无期号时为 null）
+ *   type   province 省份专辑 | special 特刊 | supplement 增刊 | appendix 附刊 | book 图书
  *   title  刊名
  */
 window.CNG_CATALOG_UPDATED = "%s";
