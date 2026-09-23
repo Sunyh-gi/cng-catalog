@@ -107,5 +107,12 @@ window.CNG_CATALOG = [
     "issue": 1,
     "type": "province",
     "title": "2023年第1期 江西专辑（上）"
+  },
+  {
+    "id": "2011-10",
+    "year": 2011,
+    "issue": 10,
+    "type": "province",
+    "title": "2011年第10期 喀斯特专辑"
   }
 ];
