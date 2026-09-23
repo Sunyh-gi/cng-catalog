@@ -438,6 +438,13 @@ window.CNG_CATALOG = [
     "title": "2016年第1期 甘肃专辑（上）"
   },
   {
+    "id": "2016-TK-sanjiangyuan",
+    "year": 2016,
+    "issue": null,
+    "type": "supplement",
+    "title": "2016年增刊 三江源国家公园特辑"
+  },
+  {
     "id": "2015-10",
     "year": 2015,
     "issue": 10,
