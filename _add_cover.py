@@ -14,7 +14,8 @@
   --no-append   只生成图片，不写入 catalog.js
 
 脚本做的事：
-  1. 原图 1:1 复制到 covers/full/<id>.<ext>
+  1. 原图复制到 covers/full/<id>.jpg（JPEG 源 1:1 复制；PNG/WebP 等非 JPEG 源自动转 JPEG，
+     因为页面里封面路径写死为 covers/full/<id>.jpg）
   2. 生成 480x640（3:4）缩略图到 covers/thumb/<id>.jpg
   3. 在 catalog.js 里 upsert 该条目（同 id 覆盖），并按「年份降序 + 期号降序」重排
 """
@@ -39,6 +40,7 @@ CATALOG_PATH = os.path.join(BASE_DIR, "catalog.js")
 
 THUMB_SIZE = (480, 640)          # 4:3 竖版，对应杂志封面比例
 THUMB_QUALITY = 82
+FULL_QUALITY = 92                # 非 JPEG 源转 JPEG 时的质量（页面只认 .jpg，见下）
 
 TYPES = ("province", "special", "supplement", "appendix")
 
@@ -96,16 +98,24 @@ def main():
     os.makedirs(FULL_DIR, exist_ok=True)
     os.makedirs(THUMB_DIR, exist_ok=True)
 
-    # 1) 原图原样复制
-    ext = os.path.splitext(args.src)[1].lower() or ".jpg"
-    full_path = os.path.join(FULL_DIR, args.id + ext)
-    shutil.copy2(args.src, full_path)
+    # 1) 写入 covers/full/<id>.jpg（页面里封面路径写死 .jpg）
+    #    JPEG 源原样复制；PNG/WebP 等非 JPEG 源（如网页/截图下载）转成 JPEG，
+    #    否则文件名会变成 <id>.png，页面点开大图就 404。像素尺寸不变。
+    src_ext = os.path.splitext(args.src)[1].lower()
+    full_path = os.path.join(FULL_DIR, args.id + ".jpg")
+    if src_ext in (".jpg", ".jpeg"):
+        shutil.copy2(args.src, full_path)
+    else:
+        print("源图是 %s，自动转 JPEG（q%d，尺寸不变）" % (src_ext or "无扩展名", FULL_QUALITY))
+        with Image.open(args.src) as im:
+            im.convert("RGB").save(full_path, "JPEG", quality=FULL_QUALITY,
+                                   optimize=True, progressive=True)
 
-    # 1.5) 更新封面时清掉 full 目录里同 id、异扩展名的旧文件（换格式不留残图；
-    #      同名同扩展名则已被上面 copy2 直接覆盖）。约定：更新封面一律删旧图。
+    # 1.5) 更新封面时清掉 full 目录里同 id、非 .jpg 的旧文件（换格式不留残图；
+    #      <id>.jpg 则已被上面覆盖）。约定：更新封面一律删旧图。
     for fn in os.listdir(FULL_DIR):
         fstem, fext = os.path.splitext(fn)
-        if fstem == args.id and fext.lower() != ext:
+        if fstem == args.id and fext.lower() != ".jpg":
             stale = os.path.join(FULL_DIR, fn)
             os.remove(stale)
             print("已删除旧封面文件 %s" % os.path.relpath(stale, BASE_DIR))
