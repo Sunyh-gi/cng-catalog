@@ -6,13 +6,14 @@
  *   node _smoke.js
  * 本机具体的 NODE_PATH 见 DEV_NOTES.md。
  *
- * 覆盖五轮：
+ * 覆盖七轮：
  *   A 真实数据      —— 直接读当前 catalog.js，验证计数 / 卡片 / 封面加载 / 放大查看
- *   C 对齐几何      —— 页头、筛选行、网格、侧栏的像素级对齐
+ *   C 对齐几何      —— 页头、筛选行、网格、侧栏的像素级对齐（1440 桌面）
  *   D 拥有状态      —— 点卡片弹层、已购绿点、localStorage 持久化
  *   F 缩略图不裁切  —— object-fit 与缩略图比例
  *   B 模拟数据（约 40 条）—— 由本脚本注入，验证网格列数 / 滚动 / 年份筛选 / 类别筛选 / 搜索 / 排序
  *   E 排序          —— 年份页「按期号」与自动切换（也用模拟数据）
+ *   G 手机（≤700px）—— 无横向溢出 / 单列 / 纵向堆叠顺序 / 年份轨 / 绿点完整可见 / 断点边界
  *
  * 用本机 Edge（puppeteer-core）+ 临时 http 服务，服务端可替换 catalog.js 内容。
  */
@@ -769,6 +770,113 @@ async function collectErrors(page) {
     a17bad.length ? '次序倒置的年份：' + a17bad.join(', ') : '全部年份次序正确');
 
   check('E5 无 JS 报错', errors.length === 0, errors.join(' ;; '));
+
+  await page.close();
+
+  /* ================= 场景 G：手机（≤700px）=================
+     桌面端是「左固定侧栏 + 右主区」两列。手机没有那个横向空间：200px 的侧栏把主区压到
+     不足 160px，而卡片最小宽 340px 又撑不回去 —— 右半截连同已购绿点会被 overflow-x:hidden
+     裁掉（这正是「移动版看不到已购标记」的根因）。
+     G 轮守住这件事：窄屏必须换成一条纵流、无横向溢出、卡片与绿点都完整可见。
+     用真实数据（需要真实封面与已购标记）。 */
+  mockData = null;
+  page = await browser.newPage();
+  errors = await collectErrors(page);
+  await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  await page.goto(base, { waitUntil: 'networkidle2' });
+  await sleep(400);
+  await page.evaluate(() => { try { localStorage.removeItem('cng-owned-v1'); } catch (e) {} });
+  await page.reload({ waitUntil: 'networkidle2' });
+  await sleep(700);
+
+  const g = await page.evaluate(() => {
+    const R = k => {
+      const r = document.querySelector('.' + k).getBoundingClientRect();
+      return { top: +r.top.toFixed(1), w: +r.width.toFixed(1) };
+    };
+    const sc = document.getElementById('scroller').getBoundingClientRect();
+    const card = document.querySelector('.card').getBoundingClientRect();
+    const grid = document.getElementById('grid');
+    const nav = document.querySelector('.nav');
+    return {
+      innerW: innerWidth,
+      docW: document.documentElement.scrollWidth,
+      cols: getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length,
+      gridPad: grid.getBoundingClientRect().width - card.width,
+      cardRight: +card.right.toFixed(1),
+      scrollerRight: +sc.right.toFixed(1),
+      searchW: +document.querySelector('.search').getBoundingClientRect().width.toFixed(1),
+      blocks: ['brand', 'header', 'nav', 'filters', 'scroller', 'footer'].map(R),
+      navScrollW: nav.scrollWidth, navClientW: nav.clientWidth,
+    };
+  });
+
+  check('G1 手机 390 宽下无横向溢出（侧栏不再挤压主区）',
+    g.docW === g.innerW, `文档 ${g.docW} / 视口 ${g.innerW}`);
+
+  check('G2 手机端网格降为整宽单列，卡片右缘不被裁',
+    g.cols === 1 && g.cardRight <= g.scrollerRight + 0.5,
+    `${g.cols} 列 / 卡片右缘 ${g.cardRight} vs 滚动区右缘 ${g.scrollerRight}`);
+
+  const gAsc = g.blocks.every((b, i) => i === 0 || b.top > g.blocks[i - 1].top);
+  const gFull = g.blocks.every(b => Math.abs(b.w - g.innerW) <= 0.5);
+  check('G3 纵向顺序：品牌条 → 页头 → 年份轨 → 类别轨 → 滚动区 → 页脚（各块整宽）',
+    gAsc && gFull,
+    g.blocks.map(b => b.top.toFixed(0)).join(' → ') + (gFull ? ' / 均整宽' : ' / 有块未整宽'));
+
+  check('G4 搜索框整宽（视口 − 左右各 16px）',
+    Math.abs(g.searchW - (g.innerW - 32)) <= 0.5, `${g.searchW} / 期望 ${g.innerW - 32}`);
+
+  check('G5 年份轨横向可滚动（年份表改成一条胶囊带）',
+    g.navScrollW > g.navClientW, `${g.navScrollW} > ${g.navClientW}`);
+
+  /* 点年份轨第一颗年份胶囊 → 副标题应切到该年 */
+  const gYear = await page.$eval('#yearList .nav__item .nav__text', n => n.textContent.trim());
+  await page.evaluate((y) => {
+    Array.from(document.querySelectorAll('#yearList .nav__item .nav__text'))
+      .filter(n => n.textContent.trim() === y)[0].closest('.nav__item').click();
+  }, gYear);
+  await sleep(350);
+  const gSub = await text(page, '#pageSub');
+  check(`G6 点年份胶囊生效（${gYear}）`,
+    (gSub || '').indexOf(gYear + ' 年') === 0, `副标题「${gSub}」`);
+
+  /* 触摸流程：点卡片 → 弹层 → 选「已购」→ 绿点出现且完整落在可视滚动区内 */
+  await page.evaluate(() => { document.querySelector('.nav__item--lead').click(); });
+  await sleep(300);
+  await page.evaluate(() => { document.querySelector('.card').click(); });
+  await sleep(300);
+  const gModalOpen = await page.$eval('#ownedModal', n => !n.hidden);
+  await page.evaluate(() => { document.querySelector('.owned-modal__opt[data-owned="1"]').click(); });
+  await sleep(300);
+  const gDot = await page.evaluate(() => {
+    const d = document.querySelector('.card .card__owned');
+    if (!d) return null;
+    const sc = document.getElementById('scroller').getBoundingClientRect();
+    const r = d.getBoundingClientRect();
+    return {
+      w: +r.width.toFixed(1),
+      inside: r.left >= sc.left - 0.5 && r.right <= sc.right + 0.5 &&
+              r.top >= sc.top - 0.5 && r.bottom <= sc.bottom + 0.5,
+    };
+  });
+  const gModalClosed = await page.$eval('#ownedModal', n => n.hidden);
+  check('G7 手机端点卡片能开弹层、选「已购」后绿点出现且完整可见',
+    gModalOpen && gModalClosed && !!gDot && gDot.inside,
+    `弹层开 ${gModalOpen} / 关 ${gModalClosed} / 绿点 ${gDot ? gDot.w + 'px 完整可见 ' + gDot.inside : '未出现'}`);
+
+  /* 断点边界：700px 仍走堆叠，701px 回到两列（.sidebar 重新变回有盒子的 flex 列） */
+  const dispAt = async (w) => {
+    await page.setViewport({ width: w, height: 800, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+    await sleep(250);
+    return page.evaluate(() => getComputedStyle(document.querySelector('.sidebar')).display);
+  };
+  const at700 = await dispAt(700);
+  const at701 = await dispAt(701);
+  check('G8 断点边界：700px 走堆叠、701px 回到两列',
+    at700 === 'contents' && at701 !== 'contents', `700 → ${at700} / 701 → ${at701}`);
+
+  check('G9 无 JS 报错', errors.length === 0, errors.join(' ;; '));
 
   await browser.close();
   server.close();
