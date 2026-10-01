@@ -1,42 +1,35 @@
-# 中国国家地理刊物目录（cng-catalog）
+# 中国国家地理刊物目录
 
-> 中国国家地理历年刊物目录工作台：省份专辑 / 年度增刊 / 特刊 / 附刊 / 图书五类，78 期数据 + 156 张封面，含购入标记与多维度筛选。桌面与手机端自适应（≤700px 走单列纵流，实测 320–390px 无横向溢出）。线上地址：**https://sunyh-gi.github.io/cng-catalog/**（GitHub Pages，public 仓 `Sunyh-gi/cng-catalog`）。
+中国国家地理历年特别刊物目录 —— **专辑 / 特刊 / 增刊 / 附刊 / 图书** 五类，78 期、156 张封面，支持购入标记与按年份 / 类别 / 关键词筛选、多种排序。桌面与手机自适应。
 
-## 快速上手
+**线上：https://sunyh-gi.github.io/cng-catalog/**
 
-| 操作 | 方法 |
+## 仓库结构
+
+| 路径 | 说明 |
 |---|---|
-| 录入新刊 | 用户发封面图 → `_check_cover.py` 核验 → `_add_cover.py` 录入（自动写 catalog.js + covers）→ 冒烟 → CHANGELOG 记「数据更新」 |
-| 封面核验 | `python _check_cover.py`（完整性/红边/内容框/无书脊/查重/偏小） |
-| 发布 | `node _gh_push.js --dry-run` 核对 → `node _gh_push.js`（PAT 在 `.gh_token`，幂等只推变化文件） |
-| 发布核验 | `python _verify_live.py`（7 项全过才算成功；Pages CDN 有 2–4 分钟滞后，别误判） |
-| 回归 | `node _smoke.js`（70 断言，含手机端 G 轮；EDGE_PATH 指定 Edge） |
-| 改标题 | 直接 Edit catalog.js（勿拿 covers/full/<id>.jpg 当 --src，会报 WinError 32） |
+| `index.html` | 单文件工作台（v3.12），桌面 + 手机两套布局 |
+| `catalog.js` | 数据真源，78 条 `year` / `issue` / `type` / `title` |
+| `covers/` | 封面 `full` 与 `thumb`，各 78 张 |
+| `CHANGELOG.md` | 完整变更史（版本节 + 数据更新节） |
+| `_add_cover.py` · `_check_cover.py` | 封面录入 / 入库前核验 |
+| `_smoke.js` | 回归冒烟，70 项断言（含手机端） |
+| `_gh_push.js` | 推送，只推变化文件 |
+| `_shot.js` · `_probe_align.js` | 截图 / 像素对齐探针 |
 
-## 文件结构
+## 维护
 
-```
-中国国家地理刊物\
-├── index.html          # 单文件工作台（v3.12；桌面 + 手机 ≤700px 两套布局）
-├── catalog.js          # 数据真源（78 条：year/issue/type/title…）
-├── covers\             # 156 张封面（full + thumb）
-├── CHANGELOG.md        # 110KB 完整变更史（版本节 + 数据更新节）
-├── DEV_NOTES.md / README.md
-├── _add_cover.py       # 封面录入（自动缩略图；--title 帮助含三类命名规范）
-├── _check_cover.py     # 封面入库前核验
-├── _gh_push.js / .gh_token(.example)   # GitHub 推送（⚠ PAT 勿外传）
-├── _verify_live.py     # 线上核验（7 项）
-├── _smoke.js / _shot.js / _probe_align.js
-├── 预览-*.png × 5      # 关键方案对比截图
-└── docs\日志\          # 09-22（设计稿）+ 09-23（录入约定）+ 09-24（78 条收官）日志
+```bash
+python _check_cover.py        # 封面核验：完整性 / 红边 / 内容框 / 无书脊 / 查重
+python _add_cover.py --help   # 录入新刊：自动生成缩略图，写 catalog.js + covers
+node   _smoke.js              # 回归冒烟（EDGE_PATH 指定 Edge）
+node   _gh_push.js --dry-run  # 核对变化清单；去掉 --dry-run 即推送
 ```
 
-## 核心口径（详见 项目记忆.md）
+流程：封面图 → 核验 → 录入 → 冒烟 → 记 CHANGELOG「数据更新」。
 
-- **刊名与种类是两回事**：特辑/专刊只是名称；种类看性质（专辑/特刊/增刊/附刊/图书）
-- 封面一律「无书脊版」；红边框是素材固有样式不裁剪；真封面内容框比例 ≈ 0.655
-- 版本号只代表页面本身：录数据不抬版本，记 CHANGELOG「数据更新」
+## 口径
 
-## 详细历史
-
-- `docs\日志\2026-09-22.md`（设计稿 13 轮）、`2026-09-23-*.md`（录入约定）、`2026-09-24-*.md`（18 本新增 + 图书分类 + 推送上线）、`2026-10-01-手机端布局.md`（v3.12 根因排查与改法）
+- **刊名与种类是两回事**：「特辑」「专刊」只是名称，种类看性质（专辑 / 特刊 / 增刊 / 附刊 / 图书）
+- 封面一律「无书脊版」；红边框是素材固有样式、不裁剪，内容框比例 ≈ 0.655
+- **版本号只代表页面本身**：录数据、改文档、改脚本都不抬版本，记 CHANGELOG「数据更新」节
