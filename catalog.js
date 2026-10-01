@@ -7,6 +7,8 @@
  *   issue  期号（增刊/特刊/图书无期号时为 null）
  *   type   province 省份专辑 | special 特刊 | supplement 增刊 | appendix 附刊 | book 图书
  *   title  刊名
+ *   owned  可选。1 = 已购。作为页面「已购绿点」的初始值，任何设备打开都可见；
+ *          页面里手动点的标记只写在本机 localStorage，不跨设备（见 _set_owned.py）
  */
 window.CNG_CATALOG_UPDATED = "2026-09-24";
 window.CNG_CATALOG = [
@@ -204,154 +206,176 @@ window.CNG_CATALOG = [
     "year": 2021,
     "issue": 10,
     "type": "province",
-    "title": "2021年第10期 219国道专辑"
+    "title": "2021年第10期 219国道专辑",
+    "owned": 1
   },
   {
     "id": "2021-02",
     "year": 2021,
     "issue": 2,
     "type": "province",
-    "title": "2021年第2期 湖南专辑（下）"
+    "title": "2021年第2期 湖南专辑（下）",
+    "owned": 1
   },
   {
     "id": "2021-01",
     "year": 2021,
     "issue": 1,
     "type": "province",
-    "title": "2021年第1期 湖南专辑（上）"
+    "title": "2021年第1期 湖南专辑（上）",
+    "owned": 1
   },
   {
     "id": "2021-TK-zuimeigonglu",
     "year": 2021,
     "issue": null,
     "type": "supplement",
-    "title": "2021年增刊 中国最美公路"
+    "title": "2021年增刊 中国最美公路",
+    "owned": 1
   },
   {
     "id": "2021-TK-suzhou",
     "year": 2021,
     "issue": null,
     "type": "special",
-    "title": "2021年特辑 苏州"
+    "title": "2021年特辑 苏州",
+    "owned": 1
   },
   {
     "id": "2021-TK-lasa",
     "year": 2021,
     "issue": null,
     "type": "special",
-    "title": "2021年特刊 拉萨"
+    "title": "2021年特刊 拉萨",
+    "owned": 1
   },
   {
     "id": "2020-10",
     "year": 2020,
     "issue": 10,
     "type": "province",
-    "title": "2020年第10期 海岸带专辑"
+    "title": "2020年第10期 海岸带专辑",
+    "owned": 1
   },
   {
     "id": "2020-02",
     "year": 2020,
     "issue": 2,
     "type": "province",
-    "title": "2020年第2期 辽宁专辑（下）"
+    "title": "2020年第2期 辽宁专辑（下）",
+    "owned": 1
   },
   {
     "id": "2020-01",
     "year": 2020,
     "issue": 1,
     "type": "province",
-    "title": "2020年第1期 辽宁专辑（上）"
+    "title": "2020年第1期 辽宁专辑（上）",
+    "owned": 1
   },
   {
     "id": "2020-BK-laojiahenan",
     "year": 2020,
     "issue": null,
     "type": "book",
-    "title": "2020 老家河南：一个来了都说“中”的地方"
+    "title": "2020 老家河南：一个来了都说“中”的地方",
+    "owned": 1
   },
   {
     "id": "2020-TK-zibo",
     "year": 2020,
     "issue": null,
     "type": "supplement",
-    "title": "2020年增刊 淄博"
+    "title": "2020年增刊 淄博",
+    "owned": 1
   },
   {
     "id": "2020-TK-abazhou",
     "year": 2020,
     "issue": null,
     "type": "special",
-    "title": "2020年特刊 阿坝州"
+    "title": "2020年特刊 阿坝州",
+    "owned": 1
   },
   {
     "id": "2019-10",
     "year": 2019,
     "issue": 10,
     "type": "province",
-    "title": "2019年第10期 长江专辑"
+    "title": "2019年第10期 长江专辑",
+    "owned": 1
   },
   {
     "id": "2019-02",
     "year": 2019,
     "issue": 2,
     "type": "province",
-    "title": "2019年第2期 湖北专辑（下）"
+    "title": "2019年第2期 湖北专辑（下）",
+    "owned": 1
   },
   {
     "id": "2019-01",
     "year": 2019,
     "issue": 1,
     "type": "province",
-    "title": "2019年第1期 湖北专辑（上）"
+    "title": "2019年第1期 湖北专辑（上）",
+    "owned": 1
   },
   {
     "id": "2019-TK-daxiongmao150",
     "year": 2019,
     "issue": null,
     "type": "supplement",
-    "title": "2019年增刊 纪念大熊猫科学发现150周年·雅安特辑"
+    "title": "2019年增刊 纪念大熊猫科学发现150周年·雅安特辑",
+    "owned": 1
   },
   {
     "id": "2019-TK-fengyun",
     "year": 2019,
     "issue": null,
     "type": "supplement",
-    "title": "2019年增刊 风云气象卫星50年纪念增刊"
+    "title": "2019年增刊 风云气象卫星50年纪念增刊",
+    "owned": 1
   },
   {
     "id": "2019-TK-jinzanggonglu",
     "year": 2019,
     "issue": null,
     "type": "supplement",
-    "title": "2019年增刊 最美的进藏公路"
+    "title": "2019年增刊 最美的进藏公路",
+    "owned": 1
   },
   {
     "id": "2018-10",
     "year": 2018,
     "issue": 10,
     "type": "province",
-    "title": "2018年第10期 大横断专辑"
+    "title": "2018年第10期 大横断专辑",
+    "owned": 1
   },
   {
     "id": "2018-02",
     "year": 2018,
     "issue": 2,
     "type": "province",
-    "title": "2018年第2期 广西专辑（下）"
+    "title": "2018年第2期 广西专辑（下）",
+    "owned": 1
   },
   {
     "id": "2018-01",
     "year": 2018,
     "issue": 1,
     "type": "province",
-    "title": "2018年第1期 广西专辑（上）"
+    "title": "2018年第1期 广西专辑（上）",
+    "owned": 1
   },
   {
     "id": "2018-TK-disanji",
     "year": 2018,
     "issue": null,
     "type": "special",
-    "title": "2018年特刊 第三极"
+    "title": "2018年特刊 第三极",
+    "owned": 1
   },
   {
     "id": "2018-TK-bijie",
@@ -372,7 +396,8 @@ window.CNG_CATALOG = [
     "year": 2017,
     "issue": 10,
     "type": "province",
-    "title": "2017年第10期 黄河·黄土专辑"
+    "title": "2017年第10期 黄河·黄土专辑",
+    "owned": 1
   },
   {
     "id": "2017-TK-longyangxia",
@@ -386,133 +411,152 @@ window.CNG_CATALOG = [
     "year": 2017,
     "issue": 4,
     "type": "province",
-    "title": "2017年第4期 吉林专辑（下）"
+    "title": "2017年第4期 吉林专辑（下）",
+    "owned": 1
   },
   {
     "id": "2017-03",
     "year": 2017,
     "issue": 3,
     "type": "province",
-    "title": "2017年第3期 吉林专辑（上）"
+    "title": "2017年第3期 吉林专辑（上）",
+    "owned": 1
   },
   {
     "id": "2017-TK-guangdong",
     "year": 2017,
     "issue": null,
     "type": "special",
-    "title": "2017年特刊 广东"
+    "title": "2017年特刊 广东",
+    "owned": 1
   },
   {
     "id": "2017-TK-dalasa",
     "year": 2017,
     "issue": null,
     "type": "special",
-    "title": "2017年特刊 大拉萨"
+    "title": "2017年特刊 大拉萨",
+    "owned": 1
   },
   {
     "id": "2016-11",
     "year": 2016,
     "issue": 11,
     "type": "province",
-    "title": "2016年第11期 漫步中国专辑（下）"
+    "title": "2016年第11期 漫步中国专辑（下）",
+    "owned": 1
   },
   {
     "id": "2016-10",
     "year": 2016,
     "issue": 10,
     "type": "province",
-    "title": "2016年第10期 漫步中国专辑（上）"
+    "title": "2016年第10期 漫步中国专辑（上）",
+    "owned": 1
   },
   {
     "id": "2016-02",
     "year": 2016,
     "issue": 2,
     "type": "province",
-    "title": "2016年第2期 甘肃专辑（下）"
+    "title": "2016年第2期 甘肃专辑（下）",
+    "owned": 1
   },
   {
     "id": "2016-01",
     "year": 2016,
     "issue": 1,
     "type": "province",
-    "title": "2016年第1期 甘肃专辑（上）"
+    "title": "2016年第1期 甘肃专辑（上）",
+    "owned": 1
   },
   {
     "id": "2016-TK-sanjiangyuan",
     "year": 2016,
     "issue": null,
     "type": "supplement",
-    "title": "2016年增刊 三江源国家公园特辑"
+    "title": "2016年增刊 三江源国家公园特辑",
+    "owned": 1
   },
   {
     "id": "2015-10",
     "year": 2015,
     "issue": 10,
     "type": "province",
-    "title": "2015年第10期 一带一路专辑"
+    "title": "2015年第10期 一带一路专辑",
+    "owned": 1
   },
   {
     "id": "2015-02",
     "year": 2015,
     "issue": 2,
     "type": "province",
-    "title": "2015年第2期 河北专辑（下）"
+    "title": "2015年第2期 河北专辑（下）",
+    "owned": 1
   },
   {
     "id": "2015-01",
     "year": 2015,
     "issue": 1,
     "type": "province",
-    "title": "2015年第1期 河北专辑（上）"
+    "title": "2015年第1期 河北专辑（上）",
+    "owned": 1
   },
   {
     "id": "2014-10",
     "year": 2014,
     "issue": 10,
     "type": "province",
-    "title": "2014年第10期 西藏专辑"
+    "title": "2014年第10期 西藏专辑",
+    "owned": 1
   },
   {
     "id": "2014-02",
     "year": 2014,
     "issue": 2,
     "type": "province",
-    "title": "2014年第2期 重庆专辑（下）"
+    "title": "2014年第2期 重庆专辑（下）",
+    "owned": 1
   },
   {
     "id": "2014-01",
     "year": 2014,
     "issue": 1,
     "type": "province",
-    "title": "2014年第1期 重庆专辑（上）"
+    "title": "2014年第1期 重庆专辑（上）",
+    "owned": 1
   },
   {
     "id": "2014-ZJ-fujian",
     "year": 2014,
     "issue": null,
     "type": "province",
-    "title": "2014年专辑 福建"
+    "title": "2014年专辑 福建",
+    "owned": 1
   },
   {
     "id": "2013-10",
     "year": 2013,
     "issue": 10,
     "type": "province",
-    "title": "2013年第10期 新疆专辑"
+    "title": "2013年第10期 新疆专辑",
+    "owned": 1
   },
   {
     "id": "2013-02",
     "year": 2013,
     "issue": 2,
     "type": "province",
-    "title": "2013年第2期 海南专辑（下）"
+    "title": "2013年第2期 海南专辑（下）",
+    "owned": 1
   },
   {
     "id": "2013-01",
     "year": 2013,
     "issue": 1,
     "type": "province",
-    "title": "2013年第1期 海南专辑（上）"
+    "title": "2013年第1期 海南专辑（上）",
+    "owned": 1
   },
   {
     "id": "2013-TK-zuimeixiuxiandi",
@@ -526,21 +570,24 @@ window.CNG_CATALOG = [
     "year": 2012,
     "issue": 10,
     "type": "province",
-    "title": "2012年第10期 内蒙古专辑"
+    "title": "2012年第10期 内蒙古专辑",
+    "owned": 1
   },
   {
     "id": "2012-02",
     "year": 2012,
     "issue": 2,
     "type": "province",
-    "title": "2012年第2期 浙江专辑（下）"
+    "title": "2012年第2期 浙江专辑（下）",
+    "owned": 1
   },
   {
     "id": "2012-01",
     "year": 2012,
     "issue": 1,
     "type": "province",
-    "title": "2012年第1期 浙江专辑（上）"
+    "title": "2012年第1期 浙江专辑（上）",
+    "owned": 1
   },
   {
     "id": "2011-10",
