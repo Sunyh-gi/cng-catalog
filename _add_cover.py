@@ -56,6 +56,8 @@ CATALOG_HEADER = """/* 中国国家地理 · 特别刊物目录
  *   issue  期号（增刊/特刊/图书无期号时为 null）
  *   type   province 省份专辑 | special 特刊 | supplement 增刊 | appendix 附刊 | book 图书
  *   title  刊名
+ *   owned  可选。1 = 已购。作为页面「已购绿点」的初始值，任何设备打开都可见；
+ *          页面里手动点的标记只写在本机 localStorage，不跨设备（见 _set_owned.py）
  */
 window.CNG_CATALOG_UPDATED = "%s";
 window.CNG_CATALOG = """
@@ -156,6 +158,10 @@ def main():
     replaced = False
     for i, e in enumerate(entries):
         if e.get("id") == args.id:
+            # entry 是从命令行参数重建的，直接覆盖会把已有的 owned 冲掉
+            # （重录封面很常见，丢了已购标记就得重新固化一遍清单）
+            if "owned" in e:
+                entry["owned"] = e["owned"]
             entries[i] = entry
             replaced = True
             break
