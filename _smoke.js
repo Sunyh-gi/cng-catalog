@@ -830,6 +830,21 @@ async function collectErrors(page) {
   check('G5 年份轨横向可滚动（年份表改成一条胶囊带）',
     g.navScrollW > g.navClientW, `${g.navScrollW} > ${g.navClientW}`);
 
+  /* 竖向间距：搜索框→年份轨、年份胶囊→类别胶囊、类别胶囊→首张卡片。
+     前两处曾是 12px / 11px、第三处 10px —— 胶囊几乎贴着分隔线和卡片，用户反馈「挤到一起」。
+     这里量的是「元素边缘到元素边缘」，不是盒子到盒子（相邻 flex 项的盒间距恒为 0，量不出问题） */
+  const gGaps = await page.evaluate(() => {
+    const r = s => document.querySelector(s).getBoundingClientRect();
+    return {
+      searchToChip: +(r('.nav__item').top - r('.search').bottom).toFixed(1),
+      chipToPill:   +(r('.pill').top     - r('.nav__item').bottom).toFixed(1),
+      pillToCard:   +(r('.card').top     - r('.pill').bottom).toFixed(1),
+    };
+  });
+  check('G6 竖向间距舒展：搜索框→年份轨 / 年份轨→类别轨 / 类别轨→卡片 均 ≥ 20px',
+    gGaps.searchToChip >= 20 && gGaps.chipToPill >= 20 && gGaps.pillToCard >= 20,
+    `${gGaps.searchToChip} / ${gGaps.chipToPill} / ${gGaps.pillToCard}`);
+
   /* 点年份轨第一颗年份胶囊 → 副标题应切到该年 */
   const gYear = await page.$eval('#yearList .nav__item .nav__text', n => n.textContent.trim());
   await page.evaluate((y) => {
@@ -838,7 +853,7 @@ async function collectErrors(page) {
   }, gYear);
   await sleep(350);
   const gSub = await text(page, '#pageSub');
-  check(`G6 点年份胶囊生效（${gYear}）`,
+  check(`G7 点年份胶囊生效（${gYear}）`,
     (gSub || '').indexOf(gYear + ' 年') === 0, `副标题「${gSub}」`);
 
   /* 触摸流程：点卡片 → 弹层 → 选「已购」→ 绿点出现且完整落在可视滚动区内 */
@@ -861,9 +876,38 @@ async function collectErrors(page) {
     };
   });
   const gModalClosed = await page.$eval('#ownedModal', n => n.hidden);
-  check('G7 手机端点卡片能开弹层、选「已购」后绿点出现且完整可见',
+  check('G8 手机端点卡片能开弹层、选「已购」后绿点出现且完整可见',
     gModalOpen && gModalClosed && !!gDot && gDot.inside,
     `弹层开 ${gModalOpen} / 关 ${gModalClosed} / 绿点 ${gDot ? gDot.w + 'px 完整可见 ' + gDot.inside : '未出现'}`);
+
+  /* 全量绿点：把 78 本全标已购后重新加载（走 renderGrid 初始渲染，不是 applyOwned 局部插入），
+     逐张检查绿点都在卡片内 —— 长标题折成两行时也不能把绿点挤出卡片下缘。
+     这条守的是「已购标记在手机上到底看不看得见」：绿点必须在，且必须在卡片可视区内 */
+  await page.evaluate(() => {
+    const m = {};
+    document.querySelectorAll('.card').forEach(c => { m[c.dataset.id] = 1; });
+    localStorage.setItem('cng-owned-v1', JSON.stringify(m));
+  });
+  await page.reload({ waitUntil: 'networkidle2' });
+  await sleep(700);
+  const gAll = await page.evaluate(() => {
+    const bad = []; let twoLine = 0;
+    document.querySelectorAll('.card').forEach(card => {
+      const dot = card.querySelector('.card__owned');
+      const title = card.querySelector('.card__title');
+      const cr = card.getBoundingClientRect();
+      if (Math.round(title.getBoundingClientRect().height / 21) >= 2) twoLine++;
+      if (!dot) { bad.push(card.dataset.id + ' 无绿点'); return; }
+      const dr = dot.getBoundingClientRect();
+      if (dr.top < cr.top - 0.5 || dr.bottom > cr.bottom + 0.5 ||
+          dr.left < cr.left - 0.5 || dr.right > cr.right + 0.5) bad.push(card.dataset.id + ' 溢出卡片');
+    });
+    return { n: document.querySelectorAll('.card').length, dots: document.querySelectorAll('.card__owned').length, twoLine, bad };
+  });
+  check('G9 全部已购时每张卡片都有绿点且都完整落在卡片内（含两行标题）',
+    gAll.dots === gAll.n && gAll.bad.length === 0,
+    `${gAll.dots}/${gAll.n} 个绿点 / 两行标题 ${gAll.twoLine} 张` +
+    (gAll.bad.length ? ' / 异常：' + gAll.bad.join('，') : ''));
 
   /* 断点边界：700px 仍走堆叠，701px 回到两列（.sidebar 重新变回有盒子的 flex 列） */
   const dispAt = async (w) => {
@@ -873,10 +917,10 @@ async function collectErrors(page) {
   };
   const at700 = await dispAt(700);
   const at701 = await dispAt(701);
-  check('G8 断点边界：700px 走堆叠、701px 回到两列',
+  check('G10 断点边界：700px 走堆叠、701px 回到两列',
     at700 === 'contents' && at701 !== 'contents', `700 → ${at700} / 701 → ${at701}`);
 
-  check('G9 无 JS 报错', errors.length === 0, errors.join(' ;; '));
+  check('G11 无 JS 报错', errors.length === 0, errors.join(' ;; '));
 
   await browser.close();
   server.close();
