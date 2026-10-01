@@ -632,7 +632,10 @@ button { font-family: inherit; cursor: pointer; }
     flex-direction: row;
     align-items: center;
     gap: 6px;
-    padding: 0 16px 10px;
+    /* 上下各留白。原先 padding-top 是 0、底部只有 10，结果年份胶囊顶着搜索框、
+       又和下方类别轨贴死（实测两轨间距 0px）。现在上 14 / 下 12，
+       下方分隔线之后再给类别轨 12 的上留白 —— 两条轨之间才有呼吸。 */
+    padding: 14px 16px 12px;
     overflow-x: auto;
     overflow-y: hidden;
     border-bottom: 1px solid var(--line);
@@ -655,7 +658,7 @@ button { font-family: inherit; cursor: pointer; }
     height: auto;
     justify-content: flex-start;
     gap: 8px;
-    padding: 0 0 10px 16px;
+    padding: 12px 0 12px 16px;   /* 上 12 与年份轨的分隔线拉开，下 12 与网格拉开 */
   }
   .pills { flex: 1 1 auto; min-width: 0; gap: 6px; }
   .pill  { height: 32px; padding: 0 12px; font-size: 12px; }
@@ -665,7 +668,7 @@ button { font-family: inherit; cursor: pointer; }
 
   /* 网格：整宽单列，左右各留 16px */
   .scroller { scrollbar-gutter: auto; overscroll-behavior: contain; }
-  .grid     { gap: 10px; padding: 10px 16px 12px; }
+  .grid     { gap: 10px; padding: 12px 16px 16px; }
 
   .footer {
     flex: 0 0 auto;
@@ -792,7 +795,7 @@ button { font-family: inherit; cursor: pointer; }
 (function () {
   'use strict';
 
-  var APP_VERSION = 'v3.12';
+  var APP_VERSION = 'v3.13';
 
   /* 分类标签。新增一种 type 时，这里、TYPE_ORDER、NO_ISSUE_RANK 三处都要同步，
      并抬版本号（这属于页面改动）。冒烟 A16 会校验「胶囊 = 数据里出现的 type」兜底。 */
