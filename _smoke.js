@@ -422,6 +422,23 @@ async function collectErrors(page) {
   await page.reload({ waitUntil: 'domcontentloaded' });
   await sleep(600);
 
+  /* D14 固化默认值。放在这里是有意的 —— 此刻刚好是「本机一条标记都没有」的干净状态。
+     清单固化进 catalog.js（entry.owned = 1）之后，绿点必须**不依赖 localStorage** 就显示：
+     这正是「手机上看不到已购」的正解 —— 以前标记只存在做标记的那台浏览器里，
+     换台设备打开就是一条都没有。断言口径：页面绿点的 id 集合 === catalog.js 里 owned 的 id 集合 */
+  const baked = await page.evaluate(() => {
+    const want = (window.CNG_CATALOG || []).filter(e => e.owned).map(e => e.id).sort();
+    const got = Array.from(document.querySelectorAll('.card[data-id]'))
+      .filter(c => c.querySelector('.card__owned')).map(c => c.dataset.id).sort();
+    return { want, got, ls: (() => { try { return localStorage.getItem('cng-owned-v1'); } catch (e) { return 'ERR'; } })() };
+  });
+  const bakedSame = baked.want.length > 0 && JSON.stringify(baked.want) === JSON.stringify(baked.got);
+  check('D14 catalog.js 里的 owned 默认值在「本机无标记」时就直接显示绿点',
+    bakedSame,
+    `catalog.js ${baked.want.length} 条 / 页面 ${baked.got.length} 个绿点 / 本机标记 ${baked.ls}` +
+    (bakedSame ? '' : ` / 不一致：缺 ${baked.want.filter(i => !baked.got.includes(i)).join('、') || '—'}` +
+                     `、多 ${baked.got.filter(i => !baked.want.includes(i)).join('、') || '—'}`));
+
   const realId = await page.$eval('.card', n => n.dataset.id);
   const realTitle = await page.$eval('.card .card__title', n => n.textContent.trim());
 
@@ -470,11 +487,14 @@ async function collectErrors(page) {
 
   await page.evaluate(() => { document.querySelector('.owned-modal__opt[data-owned="1"]').click(); });
   await sleep(200);
-  const dot = await page.evaluate(() => {
-    const d = document.querySelector('.card .card__owned');
+  /* 注意选择器必须锁到「被测的那张卡片」：catalog.js 里固化了一批 owned 默认值，
+     别的卡片本来就带绿点，用 `.card .card__owned` 会命中别人的绿点、量错对象 */
+  const dot = await page.evaluate((id) => {
+    const card = document.querySelector(`.card[data-id="${id}"]`);
+    const d = card && card.querySelector('.card__owned');
     if (!d) return null;
-    const info = document.querySelector('.card__info');
-    const title = document.querySelector('.card__title');
+    const info = card.querySelector('.card__info');
+    const title = card.querySelector('.card__title');
     const dr = d.getBoundingClientRect(), ir = info.getBoundingClientRect(), tr = title.getBoundingClientRect();
     return {
       w: +dr.width.toFixed(1), h: +dr.height.toFixed(1),
@@ -483,7 +503,7 @@ async function collectErrors(page) {
       bg: getComputedStyle(d).backgroundColor,
       radius: getComputedStyle(d).borderRadius,
     };
-  });
+  }, realId);
   check('D5 选「已购」后刊名下方出现小圆点（比信息区左缘右移 3px）',
     !!dot && dot.w <= 8 && Math.abs(dot.leftDiff - 3) <= 1 && dot.below > 0,
     dot ? `尺寸 ${dot.w}×${dot.h} / 比信息区左缘右移 ${dot.leftDiff}px / 刊名下方 ${dot.below}px` : '没出现圆点');
@@ -499,8 +519,10 @@ async function collectErrors(page) {
   await sleep(200);
   await page.evaluate(() => { document.querySelector('.owned-modal__opt[data-owned="0"]').click(); });
   await sleep(200);
-  const dotGone = (await page.$('.card .card__owned')) === null;
-  check('D7 改选「未购」后圆点消失、卡片无任何标记', dotGone, dotGone ? '' : '圆点仍在');
+  /* 同样要锁到被测卡片：只断言「这张卡的绿点没了」，
+     不能断言「页面上一个绿点都没有」—— 固化的默认值让别的卡片本来就带绿点 */
+  const dotGone = (await page.$(`.card[data-id="${realId}"] .card__owned`)) === null;
+  check('D7 改选「未购」后该卡圆点消失、卡片无任何标记', dotGone, dotGone ? '' : '圆点仍在');
 
   await page.click('.card');
   await sleep(200);
@@ -508,7 +530,7 @@ async function collectErrors(page) {
   await sleep(250);
   await page.reload({ waitUntil: 'domcontentloaded' });
   await sleep(600);
-  const persisted = (await page.$('.card .card__owned')) !== null;
+  const persisted = (await page.$(`.card[data-id="${realId}"] .card__owned`)) !== null;
   check('D8 刷新页面后已购标记仍在（localStorage）', persisted, persisted ? '' : '刷新后丢了');
 
   await page.click('.card__cover');
