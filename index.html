@@ -43,6 +43,8 @@
    页头左右两块就彻底错位了 */
 h1, p { margin: 0; }
 
+/* iOS 横屏会把正文字号自动放大，锁住它 */
+html { -webkit-text-size-adjust: 100%; }
 html, body { height: 100%; }
 
 body {
@@ -345,7 +347,10 @@ button { font-family: inherit; cursor: pointer; }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  /* 列宽下限必须再夹一层 min(…, 100%)：容器比 340px 还窄时（手机），
+     光写 340px 会让这一列撑破容器，右半截被 .scroller 的 overflow-x:hidden 裁掉。
+     夹住之后「容器够宽就用 340px、不够就退到容器宽」，桌面端 1440 下算出来仍是 340px，列数不变。 */
+  grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
   gap: 16px;
   align-content: start;
   padding-bottom: 4px;
@@ -566,6 +571,117 @@ button { font-family: inherit; cursor: pointer; }
   .header { margin-bottom: 8px; }
   .search { width: 180px; }
 }
+
+/* ============================================================
+   手机（≤700px）：两列改一条流
+   桌面端是「左固定侧栏 + 右主区」，手机没有那个横向空间 —— 200px 的侧栏会把主区
+   压到不足 160px，而卡片最小宽度 340px 又撑不回去，右半截连同已购绿点一起被裁掉。
+   这里把 .sidebar / .main 用 display:contents 拆成 body 的同级 flex 项，再用 order
+   重排成「品牌条 → 页头(搜索) → 年份轨 → 类别轨 → 网格 → 页脚」一条纵流。
+   DOM 与桌面端样式都不动，只有 ≤700px 走这套。
+   ============================================================ */
+@media (max-width: 700px) {
+  :root { --band-h: 56px; }
+
+  body {
+    flex-direction: column;
+    /* 手机地址栏收放时 100vh 会超出可视区，底部页脚会被压到屏幕外；dvh 跟着可视区走 */
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  .sidebar, .main { display: contents; }
+  .sidebar__divider { display: none; }
+
+  .brand    { order: 1; }
+  .header   { order: 2; }
+  .nav      { order: 3; }
+  .filters  { order: 4; }
+  .scroller { order: 5; }
+  .footer   { order: 6; }
+
+  /* 品牌条 */
+  .brand {
+    flex: 0 0 auto;
+    height: var(--band-h);
+    gap: 8px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .brand__logo { width: 92px; height: 46px; }
+  .brand__sub  { transform: none; }   /* 那 4px 光学校正只针对桌面 60px 高的 logo */
+
+  /* 页头：标题 / 副标题 / 全宽搜索框，纵向排 */
+  .header {
+    flex: 0 0 auto;
+    height: auto;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px 16px;
+    margin-bottom: 0;
+  }
+  .header__titles { gap: 4px; }
+  .header__title  { font-size: 16px; line-height: 22px; }
+  .header__sub    { font-size: 11px; line-height: 16px; }
+  .search         { width: 100%; height: 38px; }
+
+  /* 年份轨：侧栏那份纵向年份表改成一条横向滚动的胶囊带 */
+  .nav {
+    flex: 0 0 auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    padding: 0 16px 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-bottom: 1px solid var(--line);
+  }
+  .nav__label { display: none; }          /* 窄屏上胶囊自带语义，不需要分组标签 */
+  /* 年份轨沿用桌面侧栏那套「文字 + 浅红底选中」，不改成实心胶囊：
+     否则它和下方实心红的类别轨长得一模一样，两行会被当成同一组筛选。
+     选中态（浅红底 / 红字 / 图标转红）全部由桌面规则提供，这里只改盒形。 */
+  .nav__item,
+  .nav__item--lead {
+    flex: 0 0 auto;
+    height: 32px;
+    padding: 0 10px;
+    background: transparent;
+  }
+
+  /* 类别轨：胶囊横向滚动，排序控件钉在右端 */
+  .filters {
+    flex: 0 0 auto;
+    height: auto;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 0 0 10px 16px;
+  }
+  .pills { flex: 1 1 auto; min-width: 0; gap: 6px; }
+  .pill  { height: 32px; padding: 0 12px; font-size: 12px; }
+  .sort  { margin-right: 16px; }
+  .sort__btn  { height: 32px; }
+  .sort__menu { top: 38px; }
+
+  /* 网格：整宽单列，左右各留 16px */
+  .scroller { scrollbar-gutter: auto; overscroll-behavior: contain; }
+  .grid     { gap: 10px; padding: 10px 16px 12px; }
+
+  .footer {
+    flex: 0 0 auto;
+    padding: 12px 16px;
+    border-top: 1px solid var(--line);
+  }
+
+  /* 浮层：窄屏把留白收进来 */
+  .owned-modal { padding: 16px; }
+  .viewer      { padding: 16px; }
+  .viewer__img { max-height: calc(100dvh - 110px); max-width: 100%; }
+
+  /* 触摸端没有 hover，用按下反馈代替 */
+  .card:active { background: var(--fill); }
+  .pill:active { background: var(--fill-hover); }
+}
 </style>
 </head>
 <body>
@@ -676,7 +792,7 @@ button { font-family: inherit; cursor: pointer; }
 (function () {
   'use strict';
 
-  var APP_VERSION = 'v3.11';
+  var APP_VERSION = 'v3.12';
 
   /* 分类标签。新增一种 type 时，这里、TYPE_ORDER、NO_ISSUE_RANK 三处都要同步，
      并抬版本号（这属于页面改动）。冒烟 A16 会校验「胶囊 = 数据里出现的 type」兜底。 */
