@@ -10,8 +10,15 @@
  *   owned  可选。1 = 已购。作为页面「已购绿点」的初始值，任何设备打开都可见；
  *          页面里手动点的标记只写在本机 localStorage，不跨设备（见 _set_owned.py）
  */
-window.CNG_CATALOG_UPDATED = "2026-09-24";
+window.CNG_CATALOG_UPDATED = "2026-10-14";
 window.CNG_CATALOG = [
+  {
+    "id": "2026-10",
+    "year": 2026,
+    "issue": 10,
+    "type": "province",
+    "title": "2026年第10期 331国道专辑"
+  },
   {
     "id": "2026-02",
     "year": 2026,
